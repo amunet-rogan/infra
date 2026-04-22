@@ -65,13 +65,20 @@ scp -O -q "$REPO_ROOT/amunet/runner/.env.example" \
 # -----------------------------------------------------------------------------
 # Nginx config — needs sudo to install + reload
 # -----------------------------------------------------------------------------
-echo "→ Copying nginx config to /tmp and installing (sudo password needed — prompt will appear after pressing Enter, even if not visible)"
+echo "→ Copying nginx config to Amunet"
 scp -O -q "$REPO_ROOT/amunet/nginx/http.amunet-rogan.conf" \
        "$AMUNET_HOST:/tmp/http.amunet-rogan.conf"
 
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Sudo password needed on Amunet to reload nginx."
+echo "  Type it when prompted below (will not echo):"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
 ssh -t "$AMUNET_HOST" "
   set -e
-  sudo cp /tmp/http.amunet-rogan.conf $NGINX_CONF_PATH
+  sudo -p '  Amunet sudo password: ' cp /tmp/http.amunet-rogan.conf $NGINX_CONF_PATH
   sudo chmod 644 $NGINX_CONF_PATH
   sudo nginx -t
   sudo /usr/syno/bin/synosystemctl reload nginx
