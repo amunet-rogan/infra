@@ -20,7 +20,7 @@ echo "→ Remote base: $REMOTE_BASE"
 echo ""
 
 # Make sure remote dirs exist
-ssh "$AMUNET_HOST" "mkdir -p $REMOTE_BASE/tools $REMOTE_BASE/runner" \
+ssh "$AMUNET_HOST" "mkdir -p $REMOTE_BASE/tools $REMOTE_BASE/runner/data" \
   2>&1 | grep -v "post-quantum\|See https://openssh" || true
 
 # -----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ ssh -t "$AMUNET_HOST" "
   sudo cp /tmp/http.amunet-rogan.conf $NGINX_CONF_PATH
   sudo chmod 644 $NGINX_CONF_PATH
   sudo nginx -t
-  sudo synosystemctl reload nginx
+  sudo /usr/syno/bin/synosystemctl reload nginx
   rm /tmp/http.amunet-rogan.conf
   echo '✓ nginx reloaded successfully'
 " 2>&1 | grep -v "post-quantum\|See https://openssh" || true
