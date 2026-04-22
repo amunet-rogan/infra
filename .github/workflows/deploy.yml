@@ -1,0 +1,166 @@
+# Reusable deploy workflow for amunet-rogan tools.
+#
+# Called by each tool repo's .github/workflows/deploy.yml with:
+#   uses: amunet-rogan/infra/.github/workflows/deploy.yml@v1
+#   with:
+#     user: sky_max
+#   secrets: inherit
+#
+# Flow:
+#   1. build  — on GitHub-hosted runner: docker build + push to GHCR
+#   2. deploy — on self-hosted Amunet runner: docker compose up
+#
+# The tool name is derived from the repo name (the part after "amunet-rogan/").
+# Internal port is read from /volume1/docker/amunet-rogan/tools/<user>/<tool>/config.env,
+# which means the tool must have been onboarded before the first deploy.
+
+name: Reusable Deploy
+
+on:
+  workflow_call:
+    inputs:
+      user:
+        description: "Tool owner namespace (e.g. sky_max, jenda)"
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build + push image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      sha_tag: ${{ steps.meta.outputs.sha_tag }}
+      tool_name: ${{ steps.meta.outputs.tool_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute image metadata
+        id: meta
+        run: |
+          tool_name="${GITHUB_REPOSITORY#*/}"
+          image="ghcr.io/amunet-rogan/${tool_name}"
+          echo "tool_name=$tool_name"            >> "$GITHUB_OUTPUT"
+          echo "image=$image"                    >> "$GITHUB_OUTPUT"
+          echo "sha_tag=$image:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "latest_tag=$image:latest"        >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.sha_tag }}
+            ${{ steps.meta.outputs.latest_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Amunet
+    needs: build
+    runs-on: [self-hosted, amunet, amunet-rogan]
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Compute paths
+        id: paths
+        run: |
+          user_v="${{ inputs.user }}"
+          tool_v="${{ needs.build.outputs.tool_name }}"
+          tool_dir="/volume1/docker/amunet-rogan/tools/${user_v}/${tool_v}"
+          echo "user=$user_v"        >> "$GITHUB_OUTPUT"
+          echo "tool=$tool_v"        >> "$GITHUB_OUTPUT"
+          echo "tool_dir=$tool_dir"  >> "$GITHUB_OUTPUT"
+
+      - name: Verify tool is onboarded
+        run: |
+          config="${{ steps.paths.outputs.tool_dir }}/config.env"
+          if [[ ! -f "$config" ]]; then
+            echo "::error::Tool '${{ steps.paths.outputs.user }}/${{ steps.paths.outputs.tool }}' is not onboarded."
+            echo "::error::Ask Jenda to run:"
+            echo "::error::  cd ~/Projects/Amunet/infra"
+            echo "::error::  ./scripts/onboard-tool.sh ${{ steps.paths.outputs.user }} ${{ steps.paths.outputs.tool }}"
+            echo "::error::  git add amunet/ && git commit -m 'Onboard ${{ steps.paths.outputs.user }}/${{ steps.paths.outputs.tool }}' && git push"
+            echo "::error::  ./scripts/sync-to-amunet.sh"
+            exit 1
+          fi
+
+      - name: Load tool port
+        id: config
+        run: |
+          config="${{ steps.paths.outputs.tool_dir }}/config.env"
+          port=$(grep '^INTERNAL_PORT=' "$config" | cut -d= -f2)
+          if [[ -z "$port" ]]; then
+            echo "::error::No INTERNAL_PORT in $config"
+            exit 1
+          fi
+          echo "internal_port=$port" >> "$GITHUB_OUTPUT"
+
+      - name: Write .env from secrets
+        env:
+          ALL_SECRETS: ${{ toJSON(secrets) }}
+        run: |
+          cd "${{ steps.paths.outputs.tool_dir }}"
+          # Filter out GitHub-auto secrets; keep only user-set ones.
+          # docker env_file doesn't need quoting — just KEY=VALUE lines.
+          echo "$ALL_SECRETS" | jq -r '
+            to_entries[]
+            | select(.key | test("^(GITHUB_TOKEN|GH_TOKEN|ACTIONS_)"; "i") | not)
+            | "\(.key)=\(.value)"
+          ' > .env
+          chmod 600 .env
+          echo "Wrote $(wc -l < .env) secret(s) to .env"
+
+      - name: Render docker-compose.yml
+        run: |
+          cd "${{ steps.paths.outputs.tool_dir }}"
+          cat > docker-compose.yml <<YAML
+          services:
+            app:
+              image: ${{ needs.build.outputs.sha_tag }}
+              container_name: amunet-rogan-${{ steps.paths.outputs.user }}-${{ steps.paths.outputs.tool }}
+              restart: unless-stopped
+              env_file: .env
+              environment:
+                TOOL_NAME: ${{ steps.paths.outputs.tool }}
+              ports:
+                - "127.0.0.1:${{ steps.config.outputs.internal_port }}:8000"
+          YAML
+
+      - name: Log in to GHCR (for pull)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull and deploy
+        run: |
+          cd "${{ steps.paths.outputs.tool_dir }}"
+          docker compose pull
+          docker compose up -d --remove-orphans
+
+      - name: Report URL
+        run: |
+          url="http://amunet.tail49d1b.ts.net/${{ steps.paths.outputs.user }}/${{ steps.paths.outputs.tool }}/"
+          echo "::notice title=Deployed::$url"
+          echo "### Deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "[$url]($url)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Image: \`${{ needs.build.outputs.sha_tag }}\`" >> "$GITHUB_STEP_SUMMARY"

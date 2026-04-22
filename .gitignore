@@ -1,0 +1,9 @@
+# Local runtime
+amunet/runner/.env
+amunet/runner/data/
+
+# Python / editor noise (none expected, but just in case)
+.DS_Store
+.vscode/
+.idea/
+*.log
