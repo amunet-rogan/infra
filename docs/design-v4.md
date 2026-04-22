@@ -18,7 +18,7 @@ Initial users: `sky_max` (Martin), `jenda` (future).
 | Reverse proxy | DSM's built-in nginx | Validated to coexist with DSM default on :80 |
 | Port 80 | Stays with DSM | `amunet.synology.me` cert auto-renewal unaffected |
 | Runner | One org-level self-hosted runner on Amunet | Separate from Anubis runner |
-| Image registry | `ghcr.io/amunet-rogan/<user>-<tool>` | |
+| Image registry | `ghcr.io/amunet-rogan/<tool>` | |
 | GHCR retention | Last 10 tagged + drop untagged after 7d | Configured at org level |
 | Tool port range | 8001–8099, bound to `127.0.0.1` only | Not network-reachable |
 | Jenda's local repos | `~/Projects/Amunet/` | `infra/`, `tool-template/` |
@@ -45,7 +45,7 @@ Initial users: `sky_max` (Martin), `jenda` (future).
 │       Amunet (Synology DS920+)         │        ┌──────────────────────┐
 │                                        │        │  GHCR                │
 │   ┌──────────────┐                     │◀──────│  ghcr.io/amunet-     │
-│   │  DSM nginx   │                     │  (3)   │  rogan/<user>-<tool> │
+│   │  DSM nginx   │                     │  (3)   │  rogan/<tool>           │
 │   │     :80      │                     │        └──────────────────────┘
 │   │  + custom    │                     │
 │   │  conf        │                     │        ┌──────────────────────┐
@@ -117,14 +117,15 @@ tool-template/
         └── deploy.yml                  ← 5-liner
 ```
 
-### 3.3 User tool repos — `amunet-rogan/<user>-<tool>`
+### 3.3 User tool repos — `amunet-rogan/<tool>`
 
-Convention: repo name starts with the user's prefix, separator hyphen. Examples:
+Repo names are just the tool name, no user prefix. User identity comes from the template's hardcoded `user:` input in its workflow. Examples:
 ```
-amunet-rogan/sky_max-hello-world
-amunet-rogan/sky_max-insta-counter
-amunet-rogan/jenda-lyrion-dashboard
+amunet-rogan/hello-world
+amunet-rogan/insta-counter
+amunet-rogan/lyrion-dashboard
 ```
+Repo names must be unique within the org, which GitHub enforces automatically.
 
 ---
 
@@ -270,7 +271,7 @@ Triggered on `git push origin main` in any tool repo.
 2. **`build` job** (GitHub-hosted `ubuntu-latest`):
    - Checkout code
    - Log in to GHCR with `GITHUB_TOKEN`
-   - `docker buildx build` → `ghcr.io/amunet-rogan/<user>-<tool>:sha-<commit>` + `:latest`
+   - `docker buildx build` → `ghcr.io/amunet-rogan/<tool>:sha-<commit>` + `:latest`
    - Push both tags
 
 3. **`deploy` job** (`runs-on: [self-hosted, amunet, amunet-rogan]`):
@@ -335,7 +336,7 @@ Loopback binding — no network exposure outside DSM nginx proxying.
 
 Jenda, ~5 min per first tool by a new user, less for subsequent tools:
 
-1. User clicks **Use this template** on `amunet-rogan/tool-template`, creates repo `amunet-rogan/<user>-<tool>` in the org.
+1. User clicks **Use this template** on `amunet-rogan/tool-template`, creates repo `amunet-rogan/<tool>          ` in the org.
 
 2. On Jenda's Mac:
    ```bash
@@ -370,7 +371,7 @@ Flow: Martin pastes `META_ACCESS_TOKEN` value into GitHub UI → deploy writes `
 - **No public exposure.** Tailscale tailnet only.
 - **No SSH for users.** Deploys run through the runner.
 - **Loopback-only tool binding.** `127.0.0.1:<port>` — no external network reach.
-- **User-level namespacing.** `amunet-rogan/sky_max-*` repos can be scoped to a GitHub Team `sky_max`, giving Martin admin only on his own repos. Jenda owns the org.
+- **User-level namespacing.** User identity is encoded in each template's hardcoded `user:` workflow input. Martin can be granted admin only on the repos he creates (via GitHub Teams or direct repo access). Jenda owns the org.
 - **Runner isolation.** Registered to org only; ephemeral mode (see §13); no cross-tool file access.
 - **Image provenance.** Commit SHA in every tag; rollback = redeploy older tag.
 - **2FA mandatory** for all org members.
@@ -411,7 +412,7 @@ Estimated focused work: 3–4 hours for steps 4–10.
 - [ ] **Auto-sync infra → Amunet** — v1 uses manual `scripts/sync-to-amunet.sh`. Adding a workflow that auto-syncs on push to `main` of `infra` is a natural v2.
 - [ ] **Tool starter stack** — Flask first. Add Streamlit template on demand if user wants data dashboards.
 - [ ] **Backup** — confirm `/volume1/docker/amunet-rogan/tools/*/*/.env` is in Synology's snapshot/backup routine.
-- [ ] **Single-user initial rollout** — Martin (`sky_max`) first; Jenda's own `jenda-*` tools come later as second-user validation of the multi-user model.
+- [ ] **Single-user initial rollout** — Martin (`sky_max`) first; Jenda's own `jenda` tools (using a forked template) come later as second-user validation of the multi-user model.
 
 ---
 
