@@ -28,34 +28,51 @@ ssh "$AMUNET_HOST" "mkdir -p $REMOTE_BASE/tools $REMOTE_BASE/runner/data" \
 # files; tool runtime state lives in tools/<user>/<tool>/.env which is NOT here)
 # -----------------------------------------------------------------------------
 echo "→ Syncing tools/ (atomic full replace)"
+
+# The remote script preserves .env and docker-compose.yml from any existing
+# tool dir, then atomically swaps tools.new → tools. Each preservation cp is
+# best-effort: if a file can't be read (e.g. root-owned with chmod 600),
+# we WARN and continue — the runner will regenerate it on the next deploy.
 (
   cd "$REPO_ROOT/amunet/tools"
-  tar --exclude='.gitkeep' -cf - .
-) | ssh "$AMUNET_HOST" "
-  set -e
-  rm -rf $REMOTE_BASE/tools.new
-  mkdir -p $REMOTE_BASE/tools.new
-  tar -xf - -C $REMOTE_BASE/tools.new
+  tar --exclude=.gitkeep -cf - .
+) | ssh "$AMUNET_HOST" '
+  set -eu
+  REMOTE_BASE="'"$REMOTE_BASE"'"
 
-  # Preserve any existing .env files from tools.old that match a current tool
-  if [ -d $REMOTE_BASE/tools ]; then
-    find $REMOTE_BASE/tools -name '.env' 2>/dev/null | while read envfile; do
-      rel=\"\${envfile#$REMOTE_BASE/tools/}\"
-      new_dir=\"$REMOTE_BASE/tools.new/\$(dirname \"\$rel\")\"
-      if [ -d \"\$new_dir\" ]; then
-        cp -p \"\$envfile\" \"\$new_dir/.env\"
+  # Clean staging
+  rm -rf "$REMOTE_BASE/tools.new"
+  mkdir -p "$REMOTE_BASE/tools.new"
+  tar -xf - -C "$REMOTE_BASE/tools.new"
+
+  # Best-effort preserve runtime files from current tools/ to tools.new/
+  if [ -d "$REMOTE_BASE/tools" ]; then
+    preserve_count=0
+    skip_count=0
+    while IFS= read -r srcfile; do
+      rel="${srcfile#$REMOTE_BASE/tools/}"
+      new_dir="$REMOTE_BASE/tools.new/$(dirname "$rel")"
+      if [ -d "$new_dir" ]; then
+        if cp -p "$srcfile" "$new_dir/$(basename "$srcfile")" 2>/dev/null; then
+          preserve_count=$((preserve_count + 1))
+        else
+          echo "  ⚠ skipped (not readable): $rel — will be regenerated on next deploy" >&2
+          skip_count=$((skip_count + 1))
+        fi
       fi
-    done
-    rm -rf $REMOTE_BASE/tools.old
-    mv $REMOTE_BASE/tools $REMOTE_BASE/tools.old
+    done < <(find "$REMOTE_BASE/tools" \( -name ".env" -o -name "docker-compose.yml" \) 2>/dev/null)
+    echo "  preserved $preserve_count file(s); skipped $skip_count"
   fi
-  mv $REMOTE_BASE/tools.new $REMOTE_BASE/tools
-  rm -rf $REMOTE_BASE/tools.old
-" 2>&1 | grep -v "post-quantum\|See https://openssh" || true
 
-# -----------------------------------------------------------------------------
-# Sync runner/  — only compose + .env.example; NEVER touch .env or data/
-# -----------------------------------------------------------------------------
+  # Atomic swap
+  rm -rf "$REMOTE_BASE/tools.old"
+  [ -d "$REMOTE_BASE/tools" ] && mv "$REMOTE_BASE/tools" "$REMOTE_BASE/tools.old"
+  mv "$REMOTE_BASE/tools.new" "$REMOTE_BASE/tools"
+  rm -rf "$REMOTE_BASE/tools.old"
+
+  echo "  ✓ tools/ swap complete"
+'
+
 echo "→ Syncing runner/ (compose + .env.example only, preserves .env)"
 scp -O -q "$REPO_ROOT/amunet/runner/docker-compose.yml" \
        "$AMUNET_HOST:$REMOTE_BASE/runner/docker-compose.yml"
