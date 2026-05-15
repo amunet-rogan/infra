@@ -46,22 +46,21 @@ echo "→ Syncing tools/ (atomic full replace)"
   tar -xf - -C "$REMOTE_BASE/tools.new"
 
   # Best-effort preserve runtime files from current tools/ to tools.new/
+  # POSIX-compatible: pipe into while-read (no process substitution; Synology
+  # /bin/sh is busybox ash, which does not support < <(...))
   if [ -d "$REMOTE_BASE/tools" ]; then
-    preserve_count=0
-    skip_count=0
+    find "$REMOTE_BASE/tools" \( -name ".env" -o -name "docker-compose.yml" \) 2>/dev/null | \
     while IFS= read -r srcfile; do
       rel="${srcfile#$REMOTE_BASE/tools/}"
       new_dir="$REMOTE_BASE/tools.new/$(dirname "$rel")"
       if [ -d "$new_dir" ]; then
         if cp -p "$srcfile" "$new_dir/$(basename "$srcfile")" 2>/dev/null; then
-          preserve_count=$((preserve_count + 1))
+          echo "  preserved: $rel"
         else
           echo "  ⚠ skipped (not readable): $rel — will be regenerated on next deploy" >&2
-          skip_count=$((skip_count + 1))
         fi
       fi
-    done < <(find "$REMOTE_BASE/tools" \( -name ".env" -o -name "docker-compose.yml" \) 2>/dev/null)
-    echo "  preserved $preserve_count file(s); skipped $skip_count"
+    done
   fi
 
   # Atomic swap
