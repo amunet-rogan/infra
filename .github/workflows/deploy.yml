@@ -116,21 +116,25 @@ jobs:
           echo "internal_port=$port" >> "$GITHUB_OUTPUT"
 
       - name: Prepare data volumes
-        # Per-user shared storage. Created idempotently — first tool for a new user
-        # provisions, subsequent tools reuse. See docs/data-volumes-v1.md.
+        # Per-user shared storage. Created idempotently via a throwaway container
+        # so the paths resolve against the HOST filesystem (the runner itself
+        # doesn't bind-mount data/ or db/, only tools/). See docs/data-volumes-v1.md.
+        env:
+          AR_USER: ${{ steps.paths.outputs.user }}
         run: |
-          user="${{ steps.paths.outputs.user }}"
-          install -d -o 1026 -g 100 -m 0700 \
-            "/volume1/docker/amunet-rogan/data/${user}" \
-            "/volume1/docker/amunet-rogan/db"
-          db_file="/volume1/docker/amunet-rogan/db/${user}.db"
-          if [[ ! -f "$db_file" ]]; then
-            touch "$db_file"
-            chown 1026:100 "$db_file"
-            chmod 0600 "$db_file"
-          fi
-          echo "data: $(ls -ld /volume1/docker/amunet-rogan/data/${user})"
-          echo "db:   $(ls -l  $db_file)"
+          docker run --rm \
+            -v /volume1/docker/amunet-rogan:/x \
+            -e AR_USER \
+            alpine:3 sh -ec '
+              install -d -o 1026 -g 100 -m 0700 "/x/data/$AR_USER" "/x/db"
+              db="/x/db/$AR_USER.db"
+              if [ ! -f "$db" ]; then
+                touch "$db"
+                chown 1026:100 "$db"
+                chmod 0600 "$db"
+              fi
+              ls -ld "/x/data/$AR_USER" "/x/db/$AR_USER.db"
+            '
 
       - name: Write .env from secrets
         env:
