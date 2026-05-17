@@ -13,6 +13,10 @@
 # The tool name is derived from the repo name (the part after "amunet-rogan/").
 # Internal port is read from /volume1/docker/amunet-rogan/tools/<user>/<tool>/config.env,
 # which means the tool must have been onboarded before the first deploy.
+#
+# Each tool is injected with two persistence affordances (see docs/data-volumes-v1.md):
+#   DATA_DIR=/data       → /volume1/docker/amunet-rogan/data/<user>/ (shared across user's tools)
+#   DB_PATH=/db/app.db   → /volume1/docker/amunet-rogan/db/<user>.db (shared across user's tools)
 
 name: Reusable Deploy
 
@@ -111,6 +115,23 @@ jobs:
           fi
           echo "internal_port=$port" >> "$GITHUB_OUTPUT"
 
+      - name: Prepare data volumes
+        # Per-user shared storage. Created idempotently — first tool for a new user
+        # provisions, subsequent tools reuse. See docs/data-volumes-v1.md.
+        run: |
+          user="${{ steps.paths.outputs.user }}"
+          install -d -o 1026 -g 100 -m 0700 \
+            "/volume1/docker/amunet-rogan/data/${user}" \
+            "/volume1/docker/amunet-rogan/db"
+          db_file="/volume1/docker/amunet-rogan/db/${user}.db"
+          if [[ ! -f "$db_file" ]]; then
+            touch "$db_file"
+            chown 1026:100 "$db_file"
+            chmod 0600 "$db_file"
+          fi
+          echo "data: $(ls -ld /volume1/docker/amunet-rogan/data/${user})"
+          echo "db:   $(ls -l  $db_file)"
+
       - name: Write .env from secrets
         env:
           ALL_SECRETS: ${{ toJSON(secrets) }}
@@ -138,6 +159,11 @@ jobs:
               env_file: .env
               environment:
                 TOOL_NAME: ${{ steps.paths.outputs.tool }}
+                DATA_DIR: /data
+                DB_PATH: /db/app.db
+              volumes:
+                - /volume1/docker/amunet-rogan/data/${{ steps.paths.outputs.user }}:/data
+                - /volume1/docker/amunet-rogan/db/${{ steps.paths.outputs.user }}.db:/db/app.db
               ports:
                 - "127.0.0.1:${{ steps.config.outputs.internal_port }}:8000"
           YAML
