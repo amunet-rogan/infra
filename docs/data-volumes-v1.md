@@ -1,6 +1,6 @@
 # Data volumes for amunet-rogan tools — v1
 
-**Status**: v1 (initial)
+**Status**: v1 — implemented, verified end-to-end on `sky_max/smoke-test`
 **Date**: 2026-05-17
 **Purpose**: Give each tool persistent filesystem and SQLite storage with zero credential management. Isolation is per-user; tools owned by the same user share storage so they can interconnect.
 
@@ -73,19 +73,31 @@ Two env vars are injected by the reusable workflow. Tools read them; they never 
 1. **New step** before "Render docker-compose.yml":
    ```yaml
    - name: Prepare data volumes
+     env:
+       AR_USER: ${{ steps.paths.outputs.user }}
      run: |
-       user="${{ steps.paths.outputs.user }}"
-       install -d -o 1026 -g 100 -m 0700 \
-         "/volume1/docker/amunet-rogan/data/${user}" \
-         "/volume1/docker/amunet-rogan/db"
-       db_file="/volume1/docker/amunet-rogan/db/${user}.db"
-       if [[ ! -f "$db_file" ]]; then
-         touch "$db_file"
-         chown 1026:100 "$db_file"
-         chmod 0600 "$db_file"
-       fi
+       docker run --rm \
+         -v /volume1/docker/amunet-rogan:/x \
+         -e AR_USER \
+         alpine:3 sh -ec '
+           install -d -o 1026 -g 100 -m 0700 "/x/data/$AR_USER" "/x/db"
+           db="/x/db/$AR_USER.db"
+           if [ ! -f "$db" ]; then
+             touch "$db"
+             chown 1026:100 "$db"
+             chmod 0600 "$db"
+           fi
+         '
    ```
-   No `sudo`: the runner container runs as root with `/volume1/docker` bind-mounted rw.
+   The prep runs in a **throwaway alpine container**, not directly in the runner.
+   The runner's compose only bind-mounts `/volume1/docker/amunet-rogan/tools` — it
+   does NOT see `data/` or `db/`. Running `install -d` directly in the runner
+   would create those paths inside the runner's container filesystem, and the
+   host Docker daemon (which mounts them into the tool container) would then
+   fail with "Bind mount failed: '/volume1/docker/amunet-rogan/data/sky_max'
+   does not exist". The throwaway container mounts the parent dir explicitly,
+   so all writes land on host inodes. No `sudo` needed; the alpine container
+   runs as root with the host bind.
 
 2. **Compose heredoc** gains `volumes:` and two `environment:` entries:
    ```yaml
@@ -102,7 +114,7 @@ Both changes are backward-compatible: tools that don't read `DATA_DIR`/`DB_PATH`
 
 ---
 
-## Smoke-test verification
+## Smoke-test verification (✅ passed 2026-05-17)
 
 The smoke-test repo's `server.js` (a copy of `tool-template/server.js`) gains three endpoints exercising both stores:
 
@@ -127,6 +139,67 @@ Cross-tool interop is demonstrable by deploying a second sky_max tool that reads
 - **Blast radius**: a buggy sky_max tool can write garbage anywhere under `/data/sky_max/` and into any table in `sky_max.db`. Isolation within a user is social, not enforced.
 - **Schema discipline**: relies on the table-prefix convention. The CLAUDE.md instruction is the main mitigation.
 - **SQLite contention**: one writer at a time per user across all their tools. With WAL + a 5 s busy_timeout, invisible at marketing-tool traffic levels. If a user's tools ever go chatty, that user gets moved to Postgres — separate spec.
+
+---
+
+## Implementation notes (post-shipping)
+
+What we hit and how it shook out, for future-me or anyone debugging this.
+
+### Runner mount scope is the gotcha
+
+The self-hosted runner only bind-mounts `/volume1/docker/amunet-rogan/tools`
+(see `amunet/runner/docker-compose.yml`). Earlier drafts of this spec assumed
+the runner could `install -d` against the host filesystem directly — it can't.
+A workflow step that touches `data/` or `db/` paths must do it via a
+throwaway container with the appropriate host bind (see "Changes to the
+reusable workflow" above).
+
+Alternative considered: broaden the runner's mount to all of
+`/volume1/docker/amunet-rogan/`. Rejected because (a) it expands the runner's
+blast radius unnecessarily, (b) it would require recreating the runner
+container on Amunet, and (c) the throwaway-container pattern is self-contained
+and works with no infrastructure change.
+
+### File ownership inside the container
+
+Files the tool container writes into `$DATA_DIR` land on the host as
+`root:root` (the Node image runs as root by default). The **parent dirs**
+we provision are `jendalen:users 0700`, so:
+
+- Cross-user isolation: still enforced (only `jendalen` group can enter
+  `data/<user>/` on the host).
+- jendalen-side maintenance: requires `sudo` to delete or modify files the
+  container wrote.
+
+Acceptable for now. If it ever bites, the fix is `USER node` (or similar) in
+the template Dockerfile — but that constrains tools that want to bind to
+privileged ports inside the container, so deferred.
+
+### Host-side SQLite reads see stale data when WAL is hot
+
+When the tool container is actively writing, `/usr/bin/sqlite3` on the
+Amunet host opening the same `.db` file may report "no such table" or
+out-of-date rows. That's normal SQLite WAL behavior — committed data lives
+in the `.db-wal` sidecar until the next checkpoint. Two ways to inspect:
+
+1. Stop the container first: `docker stop amunet-rogan-<user>-<tool>` →
+   SQLite checkpoints on close → host reader sees current state. Restart
+   after with `docker compose up -d`.
+2. Or use a sqlite3 build that reads WAL: `sqlite3` 3.7.0+ does this, but
+   only if the WAL file is accessible and the lock isn't held. Easier path
+   is just to query through the running tool's HTTP API.
+
+This is a debugging note, not a bug.
+
+### `v1` tag policy
+
+We push to `main` and **move the `v1` tag forward** in place. Callers pin
+`amunet-rogan/infra/.github/workflows/deploy.yml@v1`. This means every tool's
+next deploy picks up workflow changes automatically. Acceptable because
+v1-line changes are kept backward-compatible (a tool that doesn't read
+`DATA_DIR`/`DB_PATH` just gains mounts it ignores). If we ever ship a
+breaking workflow change, cut `v2` and let tools opt in.
 
 ---
 

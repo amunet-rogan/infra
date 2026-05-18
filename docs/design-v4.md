@@ -159,6 +159,8 @@ This path survives DSM updates — unlike `/usr/syno/share/nginx/*.mustache`.
 
 ---
 
+**Persistent storage** for deployed tools lives alongside `tools/` under the same root: `data/<user>/` (filesystem) and `db/<user>.db` (SQLite). See `docs/data-volumes-v1.md` for the full spec, isolation model, and container contract.
+
 ## 5. nginx configuration
 
 ### 5.1 The generated file
@@ -408,10 +410,17 @@ Estimated focused work: 3–4 hours for steps 4–10.
 
 ## 13. Open items
 
+**Resolved during v1 data-volumes rollout (2026-05-17):**
+- Runner container only bind-mounts `tools/` from the host; `data/` and `db/` are reached via throwaway-container pattern in the workflow. Documented in `docs/data-volumes-v1.md`. Broadening the runner mount remains an option if we ever need many host-touching steps — not worth it for one step.
+
+**Still open:**
 - [ ] **Ephemeral vs persistent runner** — ephemeral = clean state per job, ~10s cold start. Recommended for this volume.
 - [ ] **Auto-sync infra → Amunet** — v1 uses manual `scripts/sync-to-amunet.sh`. Adding a workflow that auto-syncs on push to `main` of `infra` is a natural v2.
 - [ ] **Tool starter stack** — Flask first. Add Streamlit template on demand if user wants data dashboards.
-- [ ] **Backup** — confirm `/volume1/docker/amunet-rogan/tools/*/*/.env` is in Synology's snapshot/backup routine.
+- [ ] **Backup** — confirm Synology Hyper Backup covers:
+    - `/volume1/docker/amunet-rogan/tools/*/*/.env` (per-tool secrets)
+    - `/volume1/docker/amunet-rogan/data/` (per-user filesystem volumes)
+    - `/volume1/docker/amunet-rogan/db/` (per-user SQLite files)
 - [ ] **Single-user initial rollout** — Martin (`sky_max`) first; Jenda's own `jenda` tools (using a forked template) come later as second-user validation of the multi-user model.
 
 ---
