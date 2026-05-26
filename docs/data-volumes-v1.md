@@ -33,12 +33,15 @@ Both are bind-mounted at deploy time. The tool author never thinks about credent
 │   ├── sky_max/          ← entire dir → /data in every sky_max tool
 │   └── jenda/
 └── db/
-    ├── sky_max.db        ← one SQLite file → /db/app.db
-    └── jenda.db
+    ├── sky_max/          ← directory → /db in every sky_max tool
+    │   ├── app.db        ← main SQLite database
+    │   ├── app.db-shm    ← (auto-created) shared memory
+    │   └── app.db-wal    ← (auto-created) write-ahead log
+    └── jenda/
 ```
 
 - Per-user data dirs: mode `0700`, owned `1026:100` (jendalen:users).
-- Per-user `.db` files: mode `0600`, owned `1026:100`.
+- Per-user `db/<user>/` dirs: mode `0700`, owned `1026:100`. SQLite creates `app.db`/`-shm`/`-wal` inside, all owned `1026:100`.
 - Created idempotently by the deploy workflow on every run — first tool for a new user provisions them, subsequent tools reuse.
 
 ---
@@ -107,7 +110,7 @@ Two env vars are injected by the reusable workflow. Tools read them; they never 
      DB_PATH: /db/app.db
    volumes:
      - /volume1/docker/amunet-rogan/data/<user>:/data
-     - /volume1/docker/amunet-rogan/db/<user>.db:/db/app.db
+     - /volume1/docker/amunet-rogan/db/<user>:/db
    ```
 
 Both changes are backward-compatible: tools that don't read `DATA_DIR`/`DB_PATH` simply gain mounts they ignore.
@@ -217,3 +220,16 @@ Add to the infra runbook (separate doc):
 - Postgres opt-in for users whose tools outgrow SQLite (would add a single shared `postgres` service with per-user role + database; each user's tools all use the same auto-injected DSN).
 - A maintenance script that lists `du -sh /volume1/docker/amunet-rogan/data/*` and `.db` sizes, for capacity visibility.
 - A `sqlite3 ... ".tables"` health-check endpoint to verify DB write access at deploy time.
+
+
+---
+
+## Changelog
+
+### v1.1 — 2026-05-26: DB mount fix
+
+The v1 implementation bind-mounted a single SQLite file (`db/<user>.db` → `/db/app.db`). SQLite in WAL mode (which the CLAUDE.md contract enables) writes three files: `app.db`, `app.db-shm`, `app.db-wal`. Only the first was persisted; the latter two lived inside the ephemeral container. On container recreate, uncommitted WAL data was lost — confirmed in the wild after `sky_max/losovani-soutezi` started losing rows between deploys.
+
+Fix: bind-mount the directory (`db/<user>/`) instead of the file (`db/<user>.db`). SQLite's full three-file set now persists together. No application code changes needed; `DB_PATH=/db/app.db` is unchanged.
+
+Migration: existing `db/<user>.db` files were moved to `db/<user>/app.db` after a manual `PRAGMA wal_checkpoint(TRUNCATE)` to flush in-flight WAL data into the main file. Old single-file mounts are gone.

@@ -119,6 +119,10 @@ jobs:
         # Per-user shared storage. Created idempotently via a throwaway container
         # so the paths resolve against the HOST filesystem (the runner itself
         # doesn't bind-mount data/ or db/, only tools/). See docs/data-volumes-v1.md.
+        #
+        # NOTE: db/$AR_USER is a DIRECTORY, not a file. SQLite in WAL mode writes
+        # three files (app.db, app.db-shm, app.db-wal); they must all live together
+        # on the host or data is lost when the container is recreated.
         env:
           AR_USER: ${{ steps.paths.outputs.user }}
         run: |
@@ -126,14 +130,8 @@ jobs:
             -v /volume1/docker/amunet-rogan:/x \
             -e AR_USER \
             alpine:3 sh -ec '
-              install -d -o 1026 -g 100 -m 0700 "/x/data/$AR_USER" "/x/db"
-              db="/x/db/$AR_USER.db"
-              if [ ! -f "$db" ]; then
-                touch "$db"
-                chown 1026:100 "$db"
-                chmod 0600 "$db"
-              fi
-              ls -ld "/x/data/$AR_USER" "/x/db/$AR_USER.db"
+              install -d -o 1026 -g 100 -m 0700 "/x/data/$AR_USER" "/x/db/$AR_USER"
+              ls -ld "/x/data/$AR_USER" "/x/db/$AR_USER"
             '
 
       - name: Write .env from secrets
@@ -167,7 +165,7 @@ jobs:
                 DB_PATH: /db/app.db
               volumes:
                 - /volume1/docker/amunet-rogan/data/${{ steps.paths.outputs.user }}:/data
-                - /volume1/docker/amunet-rogan/db/${{ steps.paths.outputs.user }}.db:/db/app.db
+                - /volume1/docker/amunet-rogan/db/${{ steps.paths.outputs.user }}:/db
               ports:
                 - "127.0.0.1:${{ steps.config.outputs.internal_port }}:8000"
           YAML
