@@ -1,0 +1,17 @@
+{
+  "name": "amunet-handbook",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Zdroj pro http://amunet.tail49d1b.ts.net/ - prirucka k infrastrukture",
+  "scripts": {
+    "build": "bun run build.ts",
+    "check": "bun run check.ts"
+  },
+  "dependencies": {
+    "marked": "^15.0.7"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.62.1"
+  }
+}

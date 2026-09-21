@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex, nofollow">
+<title>Příručka pro Martina — Amunet</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#128220;</text></svg>">
+<style>
+:root{
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --bg:#faf8f4; --fg:#1c1917; --dim:#6b625a; --line:#ddd4c6;
+  --card:#fffdfa; --accent:#a8761f; --accent-soft:#f5e9d2;
+  --code-bg:#f2ece1; --warn-bg:#fdf6e3; --warn-line:#d9a441;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#16140f; --fg:#eee8dd; --dim:#9a9084; --line:#3a3428;
+    --card:#1f1c15; --accent:#e0b158; --accent-soft:#2e2718;
+    --code-bg:#221e16; --warn-bg:#26200f; --warn-line:#7a6224; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-underline-offset:3px}
+code{font-family:var(--mono);font-size:.855em;background:var(--code-bg);
+  padding:.14em .38em;border-radius:5px;overflow-wrap:break-word}
+.back{color:inherit;text-decoration:none}
+.back:hover span{text-decoration:underline}
+
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);
+  padding:env(safe-area-inset-top) 0 0}
+.hwrap{max-width:820px;margin:0 auto;padding:.7rem 1.1rem;display:flex;align-items:center;gap:.7rem}
+.brand{font-weight:700;letter-spacing:-.02em;font-size:1.02rem}
+.brand span{color:var(--accent)}
+.hstatus{margin-left:auto;font:600 .68rem/1 var(--mono);color:var(--accent);
+  background:var(--accent-soft);border:1px solid var(--line);padding:.34rem .6rem;border-radius:99px}
+nav{max-width:820px;margin:0 auto;padding:0 1.1rem .6rem;display:flex;gap:.4rem;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+nav::-webkit-scrollbar{display:none}
+nav a{flex:0 0 auto;font:600 .8rem/1 var(--sans);color:var(--dim);text-decoration:none;
+  padding:.44rem .74rem;border-radius:99px;border:1px solid transparent;white-space:nowrap}
+nav a:hover{color:var(--fg);background:var(--card)}
+nav a.on{color:var(--accent);background:var(--accent-soft);border-color:var(--line)}
+main{max-width:820px;margin:0 auto;padding:1.6rem 1.1rem 5rem}
+section{scroll-margin-top:112px;padding-bottom:2.4rem;margin-bottom:2.4rem;border-bottom:1px solid var(--line)}
+section:last-child{border-bottom:0}
+h1{font-size:1.72rem;line-height:1.2;letter-spacing:-.025em;margin:.2rem 0 1.1rem}
+h2{font-size:1.2rem;letter-spacing:-.015em;margin:2.1rem 0 .7rem;padding-top:.3rem}
+h3{font-size:1rem;margin:1.5rem 0 .5rem;color:var(--accent)}
+p{margin:.75rem 0}
+a{color:var(--accent);text-underline-offset:3px}
+ul,ol{padding-left:1.35rem;margin:.75rem 0}
+li{margin:.34rem 0}
+code{font-family:var(--mono);font-size:.855em;background:var(--code-bg);
+  padding:.14em .38em;border-radius:5px;overflow-wrap:break-word}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:11px;
+  padding:.9rem 1rem;overflow-x:auto;position:relative;margin:.9rem 0;
+  -webkit-overflow-scrolling:touch}
+pre code{background:0;padding:0;font-size:.83rem;line-height:1.6;white-space:pre}
+.copy{position:absolute;top:.35rem;right:.35rem;font:600 .68rem/1 var(--sans);
+  color:var(--dim);background:var(--card);border:1px solid var(--line);
+  border-radius:7px;padding:0 .7rem;min-height:34px;min-width:44px;cursor:pointer;opacity:.8}
+.copy:active,.copy.ok{color:var(--accent);border-color:var(--accent);opacity:1}
+blockquote{margin:1.1rem 0;padding:.85rem 1rem;background:var(--warn-bg);
+  border:1px solid var(--warn-line);border-left-width:3px;border-radius:0 9px 9px 0}
+blockquote p{margin:.25rem 0}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{text-align:left;padding:.55rem .7rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+td code{white-space:nowrap}
+kbd{font:600 .8em var(--mono);background:var(--card);border:1px solid var(--line);
+  border-bottom-width:2px;border-radius:5px;padding:.1em .4em}
+/* --- topologie: mobile-first, sloupec -> rada od 640px --- */
+.topo{margin:1.3rem 0}
+.topo-row,.topo-grid{display:flex;flex-direction:column;gap:.6rem}
+.node{background:var(--card);border:1px solid var(--line);border-radius:11px;
+  padding:.75rem .9rem;display:flex;flex-direction:column;gap:.12rem;flex:1 1 0;min-width:0}
+.node.is-accent{border-color:var(--accent);background:var(--accent-soft)}
+.node b{font-size:.94rem;letter-spacing:-.01em}
+.node span{font-size:.82rem;color:var(--dim);overflow-wrap:anywhere}
+.node em{font-style:normal;font:600 .74rem/1.5 var(--mono);color:var(--accent);margin-top:.2rem}
+.node code{font-size:.78em}
+.topo-row .node{position:relative}
+.topo-row .node+.node::before{content:"↓";position:absolute;top:-.62rem;left:50%;
+  transform:translateX(-50%);font:700 .8rem/1 var(--sans);color:var(--accent)}
+.topo-cap{font:600 .72rem/1 var(--sans);text-transform:uppercase;letter-spacing:.07em;
+  color:var(--dim);margin:1.5rem 0 .6rem}
+.topo-flow{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.4rem;
+  counter-reset:tf}
+.topo-flow li{counter-increment:tf;display:flex;align-items:center;gap:.6rem;
+  background:var(--card);border:1px solid var(--line);border-radius:9px;
+  padding:.55rem .8rem;font-size:.85rem}
+.topo-flow li::before{content:counter(tf);flex:0 0 auto;width:1.35rem;height:1.35rem;
+  display:grid;place-items:center;border-radius:50%;background:var(--accent-soft);
+  color:var(--accent);font:700 .7rem/1 var(--mono)}
+.topo-flow li.is-hl{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+@media (min-width:640px){
+  .topo-row{flex-direction:row;align-items:stretch}
+  .topo-grid{flex-direction:row}
+  .topo-row .node+.node::before{content:"→";top:50%;left:-.58rem;transform:translateY(-50%)}
+  .topo-row{gap:1.15rem}
+}
+.task{list-style:none;margin-left:-1.35rem}
+.task li{display:flex;gap:.75rem;align-items:flex-start;padding:.7rem .8rem;margin:.4rem 0;
+  background:var(--card);border:1px solid var(--line);border-radius:9px;
+  cursor:pointer;min-height:44px;-webkit-tap-highlight-color:transparent}
+.task li:active{border-color:var(--accent)}
+.task input{flex:0 0 auto;margin:.1rem 0 0;width:1.45rem;height:1.45rem;
+  accent-color:var(--accent);cursor:pointer}
+.task li.done{opacity:.5}
+.task li.done .tt{text-decoration:line-through}
+.tt{flex:1}
+footer{max-width:820px;margin:0 auto;padding:0 1.1rem 3rem;color:var(--dim);
+  font:.76rem/1.6 var(--mono)}
+@media (max-width:600px){
+  body{font-size:16px}
+  h1{font-size:1.48rem} h2{font-size:1.1rem}
+  main{padding:1.2rem .95rem 4rem}
+  section{scroll-margin-top:104px}
+  pre code{font-size:.78rem}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <a class="brand back" href="../">Amunet <span>/ příručka</span></a>
+    <div class="hstatus">TAILSCALE OK</div>
+  </div>
+  <nav><a href="#vitej-na-amunetu">Vítej na Amunetu</a>
+<a href="#mapa">Mapa</a>
+<a href="#novy-mac">Nový Mac</a>
+<a href="#workflow">Workflow</a>
+<a href="#reference">Reference</a></nav>
+</header>
+<main><section id="vitej-na-amunetu">
+<h1>Vítej na Amunetu</h1>
+<p>Ahoj Martine. Tahle stránka je příručka k domácí infrastruktuře — co jednotlivé kusy dělají, jak si nastavíš nový Mac a jak nasadíš vlastní nástroj.</p>
+<blockquote>
+<p><strong>Když čteš tuhle stránku, Tailscale ti funguje.</strong> Tahle adresa neexistuje na veřejném internetu — jde vidět jen ze zařízení připojených do naší privátní sítě. To je zároveň nejrychlejší test, jestli je připojení v pořádku.</p>
+</blockquote>
+<p>Příručka má čtyři části:</p>
+<ul>
+<li><strong>Mapa</strong> — co je Amunet, Tailscale, Vaultwarden, amunet-rogan a jak to spolu souvisí.</li>
+<li><strong>Nový Mac</strong> — odškrtávací seznam, co nainstalovat a jak ověřit, že to jede.</li>
+<li><strong>Workflow</strong> — jak vyrobíš a nasadíš nástroj.</li>
+<li><strong>Reference</strong> — adresy, řešení problémů, kdy psát Jendovi.</li>
+</ul>
+<p>Přehled všeho, co na Amunetu běží, i s odkazy, je na <a href="../sluzby/">seznamu služeb</a>.</p>
+<p>Nemusíš rozumět všemu. Části <em>Nový Mac</em> a <em>Workflow</em> stačí projít shora dolů.</p>
+</section>
+<section id="mapa">
+<h1>Mapa</h1>
+<div class="topo">
+
+  <div class="topo-row">
+    <div class="node">
+      <b>Tvoje zařízení</b>
+      <span>MacBook M3 Max</span>
+      <span>telefon</span>
+      <em>+ Tailscale</em>
+    </div>
+    <div class="node is-accent">
+      <b>Tailscale</b>
+      <span>privátní šifrovaná síť</span>
+      <span>funguje odkudkoliv</span>
+      <em>tail49d1b.ts.net</em>
+    </div>
+    <div class="node">
+      <b>Amunet</b>
+      <span>Synology DS920+</span>
+      <span>NAS u Jendy doma</span>
+      <em>~30 kontejnerů</em>
+    </div>
+  </div>
+
+  <p class="topo-cap">Co na Amunetu poslouchá</p>
+
+  <div class="topo-grid">
+    <div class="node">
+      <b>nginx — port 80</b>
+      <span><code>/</code> → rozcestník, služby, tahle příručka</span>
+      <span><code>/sky_max/&lt;nastroj&gt;/</code> → tvoje nástroje</span>
+    </div>
+    <div class="node">
+      <b>Ostatní služby</b>
+      <span>Vaultwarden — hesla, <code>:8280</code></span>
+      <span>AdGuard Home — DNS a reklamy</span>
+      <span>Immich — fotky, <code>:2283</code></span>
+    </div>
+  </div>
+
+  <p class="topo-cap">Jak se tvůj kód dostane na Amunet</p>
+
+  <ol class="topo-flow">
+    <li><code>git push</code></li>
+    <li>GitHub Actions sestaví image</li>
+    <li>runner na Amunetu ho stáhne</li>
+    <li class="is-hl">nástroj běží na své adrese</li>
+  </ol>
+
+</div>
+
+<h2>Amunet</h2>
+<p>Synology <strong>DS920+</strong> — NAS (síťové úložiště) stojící fyzicky u Jendy doma. Běží na něm zhruba třicet dockerových kontejnerů: fotky, hesla, DNS, git, zálohy a mimo jiné i tvoje nástroje.</p>
+<p>Je to jeden fyzický stroj. Když je vypnutý nebo restartuje, nefunguje nic z toho, co je tady popsané.</p>
+<h2>Tailscale</h2>
+<p>Nejdůležitější kus. Tailscale je <strong>privátní šifrovaná síť</strong> mezi našimi zařízeními — Mac, telefon, NAS. Funguje odkudkoliv, přes jakoukoliv Wi-Fi.</p>
+<p>Klíčové pochopení: <strong>nic z Amunetu není na veřejném internetu.</strong> Adresy typu <code>amunet.tail49d1b.ts.net</code> neexistují pro nikoho jiného. Je to bezpečné, ale znamená to:</p>
+<ul>
+<li>Bez zapnutého Tailscale ti žádná z těch adres nenačte.</li>
+<li>Když ti něco přestane jít, první otázka vždy zní: <em>běží Tailscale?</em></li>
+</ul>
+<p>Naše síť (tailnet) se jmenuje <code>tail49d1b.ts.net</code>. Amunet v ní má jméno <code>amunet.tail49d1b.ts.net</code> a IP <code>100.70.180.58</code>.</p>
+<h2>amunet-rogan</h2>
+<p>Tvoje pískoviště. Oddělený systém pro malé webové nástroje, aby ses nemusel dotknout Jendovy ostatní infrastruktury (a nemohl ji rozbít).</p>
+<p>Skládá se ze tří věcí:</p>
+<ul>
+<li><strong>GitHub org <code>amunet-rogan</code></strong> — tady žije kód. Každý nástroj je vlastní repozitář.</li>
+<li><strong><code>tool-template</code></strong> — šablona, ze které nový nástroj vyrobíš jedním kliknutím.</li>
+<li><strong>runner na Amunetu</strong> — po každém <code>git push</code> sestaví kontejner a nasadí ho.</li>
+</ul>
+<p>Tvoje nástroje běží na adresách:</p>
+<pre><code>http://amunet.tail49d1b.ts.net/sky_max/&lt;nazev-nastroje&gt;/
+</code></pre>
+<p><code>sky_max</code> je tvůj prefix. Kdyby později přibyl další člověk, má vlastní.</p>
+<h2>Vaultwarden (Bitwarden)</h2>
+<p>Self-hostovaný trezor hesel. Server běží na Amunetu, ale připojuješ se k němu <strong>normální oficiální aplikací Bitwarden</strong> — jen jí v nastavení řekneš, ať místo cloudu mluví s naším serverem.</p>
+<pre><code>https://amunet.tail49d1b.ts.net:8280
+</code></pre>
+<p>Sem patří hesla a hlavně <strong>API tokeny</strong> k nástrojům (Meta, Instagram apod.). Nikdy je nedávej přímo do kódu — kód jde na GitHub, trezor ne.</p>
+<p>Pozor: tahle adresa je <code>https</code> (na rozdíl od nástrojů) a potřebuje zapnuté Tailscale DNS.</p>
+<h2>AdGuard Home</h2>
+<p>Blokuje reklamy a trackery na úrovni DNS pro všechna zařízení v tailnetu. Nemusíš ho nijak nastavovat — jen vědět, že existuje, protože je to zároveň <strong>DNS server celé sítě</strong>. Když je Amunet dole, nemusí se ti překládat jména.</p>
+<h2>GitHub CLI (<code>gh</code>)</h2>
+<p>Nástroj v terminálu pro práci s GitHubem. Potřebuješ ho hlavně kvůli přihlášení — jednou se autentizuješ a <code>git push</code> pak funguje bez ptaní na heslo.</p>
+</section>
+<section id="novy-mac">
+<h1>Nový Mac</h1>
+<p>Odškrtávací seznam. Jdi shora dolů, každý krok má ověření. Odškrtnutí se pamatuje v prohlížeči, takže můžeš zavřít a vrátit se.</p>
+<p>Terminál otevřeš přes <kbd>Cmd</kbd>+<kbd>mezerník</kbd> → napiš <code>Terminal</code> → <kbd>Enter</kbd>.</p>
+<h2>1. Tailscale</h2>
+<p>Bez tohohle nefunguje nic dalšího, takže první.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Stáhni z <a href="https://tailscale.com/download/mac">tailscale.com/download/mac</a> (nebo App Store)</li>
+<li><input disabled="" type="checkbox"> Spusť, přihlas se <strong>stejným účtem jako na telefonu</strong></li>
+<li><input disabled="" type="checkbox"> V menu baru klikni na ikonu Tailscale → zkontroluj, že je <em>Connected</em></li>
+<li><input disabled="" type="checkbox"> Jendovi napiš, že máš nové zařízení — musí ho schválit v adminu</li>
+</ul>
+<p>Ověření v terminálu:</p>
+<pre><code class="language-bash">/Applications/Tailscale.app/Contents/MacOS/Tailscale status
+</code></pre>
+<p>Měl bys v seznamu vidět <code>amunet</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Zapni Tailscale DNS (potřeba pro Vaultwarden):</li>
+</ul>
+<pre><code class="language-bash">/Applications/Tailscale.app/Contents/MacOS/Tailscale set --accept-dns=true
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Otevři v prohlížeči <code>http://amunet.tail49d1b.ts.net/</code> — musí naskočit rozcestník Amunetu (citát a dva odkazy)</li>
+</ul>
+<blockquote>
+<p>Pokud se stránka nenačte, dál nepokračuj. Napiš Jendovi. Všechny další kroky na tomhle stojí.</p>
+</blockquote>
+<h2>2. Homebrew</h2>
+<p>Správce balíčků pro macOS. Skrz něj nainstaluješ zbytek jedním příkazem.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Nainstaluj:</li>
+</ul>
+<pre><code class="language-bash">/bin/bash -c &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&quot;
+</code></pre>
+<p>Instalátor si řekne o heslo k Macu a na konci vypíše dva řádky začínající <code>eval</code>. <strong>Ty dva řádky musíš spustit</strong> — jinak <code>brew</code> nepůjde. Zkopíruj je z výstupu a spusť.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Ověř:</li>
+</ul>
+<pre><code class="language-bash">brew --version
+</code></pre>
+<h2>3. Vývojářské nástroje</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Nainstaluj vše najednou:</li>
+</ul>
+<pre><code class="language-bash">brew install git gh node@24
+brew install --cask visual-studio-code bitwarden
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Zpřístupni Node 24 v terminálu:</li>
+</ul>
+<pre><code class="language-bash">echo &#39;export PATH=&quot;/opt/homebrew/opt/node@24/bin:$PATH&quot;&#39; &gt;&gt; ~/.zprofile
+source ~/.zprofile
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Ověř — musí vypsat <code>v24.x.x</code>:</li>
+</ul>
+<pre><code class="language-bash">node --version
+</code></pre>
+<p>Node 24 je verze, na které běží nástroje na Amunetu. Držet se jí znamená, že co funguje u tebe, funguje i tam.</p>
+<h2>4. Přihlášení k GitHubu</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Spusť:</li>
+</ul>
+<pre><code class="language-bash">gh auth login
+</code></pre>
+<p>Odpovědi: <strong>GitHub.com</strong> → <strong>HTTPS</strong> → <strong>Yes</strong> (authenticate Git) → <strong>Login with a web browser</strong>. Zobrazí se kód, zkopíruj ho, prohlížeč se otevře sám.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Ověř:</li>
+</ul>
+<pre><code class="language-bash">gh auth status
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Nastav si jméno a mail do commitů:</li>
+</ul>
+<pre><code class="language-bash">git config --global user.name &quot;Martin Tresnak&quot;
+git config --global user.email &quot;m.tresnak@gmail.com&quot;
+</code></pre>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+Zkontroluj, že je <code>m.tresnak@gmail.com</code> přidaný a ověřený na GitHubu:
+<a href="https://github.com/settings/emails">github.com/settings/emails</a>. Jinak se ti commity
+nepřipíšou a na GitHubu budou mít šedého anonyma místo tvého avataru.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+Zkontroluj, že vidíš org — musí vypsat seznam repozitářů:</p>
+</li>
+</ul>
+<pre><code class="language-bash">gh repo list amunet-rogan
+</code></pre>
+<p>Pokud vypíše chybu o oprávnění, nemáš přijatou pozvánku do orgu → <a href="https://github.com/orgs/amunet-rogan/invitation">github.com/orgs/amunet-rogan/invitation</a></p>
+<h2>5. Bitwarden</h2>
+<p>Aplikace už je nainstalovaná z kroku 3. Teď ji nasměruješ na náš server.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Otevři Bitwarden</li>
+<li><input disabled="" type="checkbox"> Na přihlašovací obrazovce klikni na <strong>ozubené kolo</strong> vlevo nahoře</li>
+<li><input disabled="" type="checkbox"> <strong>Server URL</strong> → vlož:</li>
+</ul>
+<pre><code>https://amunet.tail49d1b.ts.net:8280
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Ulož a přihlas se</li>
+<li><input disabled="" type="checkbox"> Rozšíření do prohlížeče: nainstaluj <em>Bitwarden Password Manager</em> z obchodu a nastav mu <strong>stejnou</strong> Server URL</li>
+</ul>
+<blockquote>
+<p>Kdyby se stránka trezoru jen točila a nenačetla — skoro vždy je to <code>accept-dns</code>. Spusť příkaz z kroku 1 a zkus znovu.</p>
+</blockquote>
+<h2>6. Claude Code</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Nainstaluj:</li>
+</ul>
+<pre><code class="language-bash">npm install -g @anthropic-ai/claude-code
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Spusť a přihlas se (otevře prohlížeč):</li>
+</ul>
+<pre><code class="language-bash">claude
+</code></pre>
+<p>Claude Code je asistent v terminálu — pracuje se soubory ve složce, ve které ho spustíš. Tímhle budeš psát většinu kódu nástrojů.</p>
+<h2>7. Hotovo — zkušební jízda</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Ověř, že vidíš běžící nástroj:</li>
+</ul>
+<pre><code>http://amunet.tail49d1b.ts.net/sky_max/losovani-soutezi/
+</code></pre>
+<p>Pokud se načte, máš kompletní řetěz: Tailscale → Amunet → nginx → kontejner. Můžeš jít na <em>Workflow</em>.</p>
+</section>
+<section id="workflow">
+<h1>Workflow</h1>
+<p>Jak vyrobíš a nasadíš nástroj. Po prvním průchodu to zabere pár minut.</p>
+<h2>Nový nástroj</h2>
+<p><strong>1. Vymysli název.</strong> Malá písmena, pomlčky, bez mezer a diakritiky.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>✅</td>
+<td><code>instagram-stats</code>, <code>post-scheduler</code>, <code>losovani-soutezi</code></td>
+</tr>
+<tr>
+<td>❌</td>
+<td><code>IG Stats</code>, <code>můj_nástroj!</code>, <code>Instagram Stats</code></td>
+</tr>
+</tbody></table>
+<p><strong>2. Napiš Jendovi název.</strong> Musí nástroj zaregistrovat — přidělí mu port a vygeneruje nginx konfiguraci. Trvá to půl minuty, ale bez toho tvoje URL nebude existovat.</p>
+<p><strong>3. Až potvrdí,</strong> jdi na <a href="https://github.com/amunet-rogan/tool-template">tool-template</a> → <strong>Use this template</strong> → <strong>Create a new repository</strong>:</p>
+<ul>
+<li>Owner: <code>amunet-rogan</code></li>
+<li>Repository name: <strong>přesně</strong> ten název, co Jenda potvrdil</li>
+<li>Visibility: <strong>Private</strong></li>
+</ul>
+<p><strong>4. Naklonuj k sobě:</strong></p>
+<pre><code class="language-bash">cd ~/Projects
+gh repo clone amunet-rogan/nazev-nastroje
+cd nazev-nastroje
+</code></pre>
+<h2>Psaní a lokální testování</h2>
+<p>Otevři složku ve VS Code:</p>
+<pre><code class="language-bash">code .
+</code></pre>
+<p>Spusť Claude Code ve stejné složce (v terminálu, nebo v terminálu uvnitř VS Code):</p>
+<pre><code class="language-bash">claude
+</code></pre>
+<p>A řekni mu, co chceš. Třeba: <em>„Udělej z toho formulář, kam se zadá jméno soutěže a seznam účastníků, a vylosuje se výherce.&quot;</em></p>
+<p>Nástroj si pustíš lokálně:</p>
+<pre><code class="language-bash">npm run dev
+</code></pre>
+<p>Otevři <code>http://localhost:8000</code>. Uprav kód, ulož, obnov stránku — <code>--watch</code> restartuje server sám.</p>
+<blockquote>
+<p>Testuj lokálně, dokud nejsi spokojený. Nasazení není určené k ladění — každý push je plný build a trvá ~2 minuty.</p>
+</blockquote>
+<h2>Nasazení</h2>
+<pre><code class="language-bash">git add .
+git commit -m &quot;popis co jsi udelal&quot;
+git push
+</code></pre>
+<p>To je celé. Na GitHubu v záložce <strong>Actions</strong> vidíš průběh. Až jsou obě fáze zelené ✅, nástroj běží na:</p>
+<pre><code>http://amunet.tail49d1b.ts.net/sky_max/nazev-nastroje/
+</code></pre>
+<p>Funguje i z telefonu, pokud na něm máš zapnutý Tailscale.</p>
+<h2>Tajné klíče a tokeny</h2>
+<p>Když nástroj potřebuje API klíč, <strong>nikdy ho nepiš do kódu.</strong> Kód jde na GitHub.</p>
+<p>Místo toho:</p>
+<ol>
+<li>Ulož si hodnotu do Bitwardenu (ať ji neztratíš)</li>
+<li>Na GitHubu jdi na <code>https://github.com/amunet-rogan/TVUJ-REPO/settings/secrets/actions</code></li>
+<li><strong>New repository secret</strong></li>
+<li>Name: přesně to, co ti řekne Claude — třeba <code>META_ACCESS_TOKEN</code>. <strong>Rozlišují se velká a malá písmena.</strong></li>
+<li>Secret: vlož hodnotu → <strong>Add secret</strong></li>
+</ol>
+<p>V kódu se pak čte jako <code>process.env.META_ACCESS_TOKEN</code>. Název musí sedět znak po znaku.</p>
+<h2>Dvě pravidla</h2>
+<p><strong>Neupravuj <code>Dockerfile</code> ani <code>.github/workflows/deploy.yml</code>.</strong> Ty patří Jendovi a drží nasazení pohromadě. Když si myslíš, že je potřeba je změnit, napiš mu.</p>
+<p><strong>Nepoužívej „Re-run all jobs&quot;</strong> na starých selhaných bězích. Sestaví to <em>starý</em> kód z tehdejšího commitu a přepíše tím, co teď funguje. Když chceš zkusit znovu, pushni:</p>
+<pre><code class="language-bash">git commit --allow-empty -m &quot;redeploy&quot;
+git push
+</code></pre>
+</section>
+<section id="reference">
+<h1>Reference</h1>
+<h2>Adresy</h2>
+<table>
+<thead>
+<tr>
+<th>Co</th>
+<th>Adresa</th>
+<th>Poznámka</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Rozcestník</td>
+<td><code>http://amunet.tail49d1b.ts.net/</code></td>
+<td>test Tailscale</td>
+</tr>
+<tr>
+<td>Seznam služeb</td>
+<td><a href="../sluzby/"><code>/sluzby/</code></a></td>
+<td>všechny služby s odkazy</td>
+</tr>
+<tr>
+<td>Tahle příručka</td>
+<td><code>/pro-martina/</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Tvoje nástroje</td>
+<td><code>http://amunet.tail49d1b.ts.net/sky_max/&lt;nastroj&gt;/</code></td>
+<td><code>http</code>, ne <code>https</code></td>
+</tr>
+<tr>
+<td>Vaultwarden</td>
+<td><code>https://amunet.tail49d1b.ts.net:8280</code></td>
+<td><code>https</code>, potřebuje accept-dns</td>
+</tr>
+<tr>
+<td>GitHub org</td>
+<td><a href="https://github.com/amunet-rogan">github.com/amunet-rogan</a></td>
+<td>veřejný internet</td>
+</tr>
+<tr>
+<td>Šablona nástroje</td>
+<td><a href="https://github.com/amunet-rogan/tool-template">tool-template</a></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>Všechno kromě GitHubu vyžaduje <strong>zapnutý Tailscale</strong>.</p>
+<h2>Užitečné příkazy</h2>
+<pre><code class="language-bash"># Bezi Tailscale a vidim Amunet?
+/Applications/Tailscale.app/Contents/MacOS/Tailscale status
+
+# Zapnout Tailscale DNS (potreba pro Vaultwarden)
+/Applications/Tailscale.app/Contents/MacOS/Tailscale set --accept-dns=true
+
+# Prihlaseni ke GitHubu v poradku?
+gh auth status
+
+# Spustit nastroj lokalne
+npm run dev
+
+# Nasadit
+git add . &amp;&amp; git commit -m &quot;zprava&quot; &amp;&amp; git push
+
+# Vynutit nove nasazeni beze zmeny kodu
+git commit --allow-empty -m &quot;redeploy&quot; &amp;&amp; git push
+</code></pre>
+<h2>Řešení problémů</h2>
+<h3>Stránka se vůbec nenačte</h3>
+<p>Nejčastější příčina, v tomhle pořadí:</p>
+<ol>
+<li><strong>Tailscale neběží</strong> — ikona v menu baru, musí být <em>Connected</em></li>
+<li><strong>Amunet je vypnutý nebo restartuje</strong> — napiš Jendovi</li>
+<li>Zkus <code>Tailscale status</code> a podívej se, jestli je <code>amunet</code> v seznamu</li>
+</ol>
+<h3>502 Bad Gateway</h3>
+<p>nginx ví, kam nástroj patří, ale kontejner neběží. Buď se nasazení nikdy nedokončilo, nebo kontejner spadl. Zkontroluj poslední běh v <strong>Actions</strong> a pak napiš Jendovi.</p>
+<h3>404 „Tool not found&quot;</h3>
+<p>Nástroj není zaregistrovaný v nginxu. Buď je překlep v URL, nebo Jenda ještě nespustil onboarding. Zkontroluj přesný název a napiš mu.</p>
+<h3>Vaultwarden se jen točí</h3>
+<p>Chybí Tailscale DNS. Spusť:</p>
+<pre><code class="language-bash">/Applications/Tailscale.app/Contents/MacOS/Tailscale set --accept-dns=true
+</code></pre>
+<p>A zkontroluj, že v adrese máš <code>https://</code> a port <code>8280</code>.</p>
+<h3>Actions svítí červeně ❌</h3>
+<ol>
+<li>Repozitář na GitHubu → záložka <strong>Actions</strong></li>
+<li>Klikni na červený běh</li>
+<li>Rozklikni krok, který selhal — chyba bývá na prvních řádcích</li>
+<li>Zkus to vyřešit s Claude Code</li>
+<li>Pokud ne, pošli Jendovi <strong>odkaz na ten konkrétní běh</strong></li>
+</ol>
+<p>Chyby se opravují novým pushem, ne opakovaným spouštěním starého běhu.</p>
+<h3><code>brew: command not found</code></h3>
+<p>Nedokončil jsi krok 2 — dva řádky <code>eval</code>, které instalátor vypsal. Otevři nový terminál a zkus:</p>
+<pre><code class="language-bash">eval &quot;$(/opt/homebrew/bin/brew shellenv)&quot;
+</code></pre>
+<p>Pokud pomůže, přidej ten řádek do <code>~/.zprofile</code>.</p>
+<h2>Kdy psát Jendovi</h2>
+<ul>
+<li>Nový nástroj (musí ho zaregistrovat, než použiješ šablonu)</li>
+<li>Nové zařízení do Tailscale (musí schválit)</li>
+<li>502 nebo 404 na adrese, která dřív fungovala</li>
+<li>Cokoliv na Amunetu vypadá odstavené</li>
+<li>Myslíš, že potřebuješ upravit <code>Dockerfile</code> nebo <code>deploy.yml</code></li>
+</ul>
+<p>Chyba v tvém kódu, styling, logika nástroje, přidání knihovny — to všechno zvládne Claude Code.</p>
+</section></main>
+<footer>amunet-rogan/infra · sestaveno 21. 9. 2026 11:32</footer>
+<script>
+(function(){
+  // GFM task-listy -> perzistentni odskrtavaci ukoly.
+  // marked renderuje "- [ ] text" jako <li><input disabled type=checkbox>text</li>,
+  // takze disabled odstranime a doplnime ulozeni stavu do localStorage.
+  // marked: tesny seznam -> <li><input>text</li>, volny -> <li><p><input>text</p>...</li>.
+  // V obou pripadech presuneme checkbox na zacatek <li> a zbytek zabalime do .tt.
+  document.querySelectorAll('li input[type=checkbox]').forEach(function(box){
+    var li = box.closest('li');
+    li.parentElement.classList.add('task');
+    box.removeAttribute('disabled');
+    li.insertBefore(box, li.firstChild);
+    var span = document.createElement('span');
+    span.className = 'tt';
+    while(box.nextSibling) span.appendChild(box.nextSibling);
+    li.appendChild(span);
+    span.querySelectorAll('p').forEach(function(pp){ pp.style.margin = '0'; });
+
+    var key = 'amunet:ck:' + span.textContent.trim().replace(/\s+/g,' ').slice(0,70);
+    var saved = null;
+    try{ saved = localStorage.getItem(key); }catch(e){}
+    if(saved !== null) box.checked = (saved === '1');
+    li.classList.toggle('done', box.checked);
+
+    box.addEventListener('change', function(){
+      li.classList.toggle('done', box.checked);
+      try{
+        box.checked ? localStorage.setItem(key,'1') : localStorage.setItem(key,'0');
+      }catch(e){}
+    });
+
+    // Cely radek jako tap target — na telefonu je 24px checkbox pod hranici pouzitelnosti.
+    li.addEventListener('click', function(ev){
+      if(ev.target === box) return;                  // checkbox si poradi sam
+      if(ev.target.closest('a, code, pre')) return;  // odkazy a kod necháme byt
+      box.checked = !box.checked;
+      box.dispatchEvent(new Event('change'));
+    });
+  });
+
+  // Kopirovani kodu
+  document.querySelectorAll('pre').forEach(function(pre){
+    var b = document.createElement('button');
+    b.className='copy'; b.type='button'; b.textContent='kopírovat';
+    b.addEventListener('click', function(){
+      var txt = pre.querySelector('code').textContent;
+      var done = function(){ b.textContent='zkopírováno'; b.classList.add('ok');
+        setTimeout(function(){ b.textContent='kopírovat'; b.classList.remove('ok'); },1400); };
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(txt).then(done);
+      } else {
+        var ta=document.createElement('textarea'); ta.value=txt;
+        ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); done(); }catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+    pre.appendChild(b);
+  });
+
+  // Zvyrazneni aktivni sekce v navigaci
+  var links = [].slice.call(document.querySelectorAll('nav a'));
+  var secs  = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var i = secs.indexOf(e.target);
+      links.forEach(function(l,j){ l.classList.toggle('on', i===j); });
+    });
+  }, {rootMargin:'-110px 0px -70% 0px'});
+  secs.forEach(function(s){ if(s) obs.observe(s); });
+})();
+</script>
+</body>
+</html>

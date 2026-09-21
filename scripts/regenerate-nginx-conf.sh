@@ -20,9 +20,36 @@ server {
     listen [::]:80;
     server_name amunet.tail49d1b.ts.net;
 
+    # Web Amunetu — staticke self-contained stranky, zdroj: site-src/ v tomhle repu.
+    #   /              rozcestnik
+    #   /sluzby/       seznam sluzeb
+    #   /pro-martina/  prirucka
+    # "^~" prefixy maji prednost pred regexy, takze je catchall nastroju nize
+    # nespolkne. absolute_redirect off drzi presmerovani relativni, aby fungovalo
+    # pres http i pres https (tailscale serve :443 -> :80).
+    root /volume1/docker/amunet-rogan/site;
+    absolute_redirect off;
+
     location = / {
-        default_type text/plain;
-        return 200 "amunet-rogan tools\nSee https://github.com/amunet-rogan\n";
+        try_files /index.html =404;
+        add_header Cache-Control "no-cache";
+    }
+
+    location = /sluzby      { return 301 /sluzby/; }
+    location ^~ /sluzby/ {
+        try_files $uri $uri/index.html =404;
+        add_header Cache-Control "no-cache";
+    }
+
+    location = /pro-martina { return 301 /pro-martina/; }
+    location ^~ /pro-martina/ {
+        try_files $uri $uri/index.html =404;
+        add_header Cache-Control "no-cache";
+    }
+
+    location = /favicon.ico {
+        return 204;
+        access_log off;
     }
 
 HEADER

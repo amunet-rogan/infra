@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex, nofollow">
+<title>Amunet</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='11' fill='none' stroke='%23a8761f' stroke-width='3'/></svg>">
+<style>
+:root{
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --bg:#faf8f4; --fg:#1c1917; --dim:#6b625a; --line:#ddd4c6;
+  --card:#fffdfa; --accent:#a8761f; --accent-soft:#f5e9d2;
+  --code-bg:#f2ece1; --warn-bg:#fdf6e3; --warn-line:#d9a441;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#16140f; --fg:#eee8dd; --dim:#9a9084; --line:#3a3428;
+    --card:#1f1c15; --accent:#e0b158; --accent-soft:#2e2718;
+    --code-bg:#221e16; --warn-bg:#26200f; --warn-line:#7a6224; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-underline-offset:3px}
+code{font-family:var(--mono);font-size:.855em;background:var(--code-bg);
+  padding:.14em .38em;border-radius:5px;overflow-wrap:break-word}
+.back{color:inherit;text-decoration:none}
+.back:hover span{text-decoration:underline}
+
+:root{--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}
+body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.wrap{flex:1;width:100%;max-width:640px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + 2.2rem) 1.25rem 2rem;
+  display:flex;flex-direction:column;justify-content:center;gap:2.6rem}
+.mark{font:700 .78rem/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.mark::before{content:"";display:inline-block;width:.62rem;height:.62rem;margin-right:.55rem;
+  border:2px solid var(--accent);border-radius:50%;vertical-align:-.05rem}
+figure{margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+blockquote{margin:0;font:400 1.5rem/1.5 var(--serif);letter-spacing:-.005em;
+  text-wrap:pretty;transition:opacity .45s ease}
+blockquote::before{content:"“";display:block;font-size:3rem;line-height:.6;
+  color:var(--accent);margin-bottom:.55rem}
+figcaption{margin-top:1rem;font:.8rem/1.4 var(--sans);color:var(--dim);transition:opacity .45s ease}
+figcaption::before{content:"— "}
+.fading blockquote,.fading figcaption{opacity:0}
+nav{display:grid;gap:.75rem}
+nav a{display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  min-height:64px;padding:1rem 1.2rem;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;color:var(--fg);text-decoration:none;font-weight:600;font-size:1.06rem;
+  transition:border-color .15s,transform .15s}
+nav a small{display:block;font-weight:400;font-size:.82rem;color:var(--dim);margin-top:.15rem}
+nav a::after{content:"→";color:var(--accent);font-size:1.2rem;flex:0 0 auto}
+nav a:hover{border-color:var(--accent)}
+nav a:active{transform:scale(.99)}
+footer{padding:0 1.25rem calc(env(safe-area-inset-bottom) + 1.4rem);text-align:center;
+  font:.72rem/1.6 var(--sans);color:var(--dim)}
+@media (min-width:640px){
+  blockquote{font-size:1.78rem}
+  nav{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){blockquote,figcaption{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="mark">Amunet</div>
+
+  <figure id="q" title="Klepni pro další citát">
+    <blockquote id="qt">Nevracej se k minulosti, nestav na budoucnosti. Minulé už odešlo, budoucí ještě nepřišlo. Co se děje teď, to pozoruj jasně — tady a teď.</blockquote>
+    <figcaption id="qs">Majjhima Nikāya 131 · Bhaddekaratta sutta</figcaption>
+  </figure>
+
+  <nav>
+    <a href="sluzby/">
+      <span>Seznam služeb<small>Co na Amunetu běží a kde</small></span>
+    </a>
+    <a href="pro-martina/">
+      <span>Příručka pro Martina<small>Nový Mac, Tailscale, nasazení nástrojů</small></span>
+    </a>
+  </nav>
+</main>
+<footer>Citáty z pálijského kánonu, volně přeložené · klepni na citát pro další</footer>
+<script>
+(function(){
+  var Q = [{"text":"Nevracej se k minulosti, nestav na budoucnosti. Minulé už odešlo, budoucí ještě nepřišlo. Co se děje teď, to pozoruj jasně — tady a teď.","source":"Majjhima Nikāya 131 · Bhaddekaratta sutta"},{"text":"Netrápí se tím, co minulo, netouží po tom, co přijde; žijí z toho, co je teď. Proto je jejich tvář klidná.","source":"Saṃyutta Nikāya 1.10 · Arañña sutta"},{"text":"Ve viděném ať je jen viděné, ve slyšeném jen slyšené, v pocítěném jen pocítěné, v poznaném jen poznané.","source":"Udāna 1.10 · Bāhiya sutta"},{"text":"Bdělost je cestou k nesmrtelnému, nedbalost cestou ke smrti. Bdělí neumírají; nedbalí jsou jako mrtví.","source":"Dhammapada 21"},{"text":"Mysl předchází všem věcem, mysl je jejich vůdcem; z mysli jsou utkány.","source":"Dhammapada 1"},{"text":"Pusť, co je před tebou, pusť, co je za tebou, pusť i to, co je mezi. S myslí volnou ve všem se už nevrátíš ke zrození a stárnutí.","source":"Dhammapada 348"},{"text":"Všímavost je ale, mniši, užitečná vždy a všude.","source":"Saṃyutta Nikāya 46.53"},{"text":"Z ponoření se rodí moudrost, bez něj moudrost uvadá.","source":"Dhammapada 282"},{"text":"Radujte se z bdělosti, střežte svou mysl.","source":"Dhammapada 327"},{"text":"Když se dlouze nadechuje, ví: „Dlouze se nadechuji.“ Když krátce vydechuje, ví: „Krátce vydechuji.“","source":"Majjhima Nikāya 118 · Ānāpānasati sutta"},{"text":"Úsilím, bdělostí, uměřeností a sebeovládáním si moudrý staví ostrov, který žádná povodeň nezaplaví.","source":"Dhammapada 25"},{"text":"Kdo chrání sebe, chrání druhé; kdo chrání druhé, chrání sebe.","source":"Saṃyutta Nikāya 47.19 · Sedaka sutta"}];
+  var fig = document.getElementById('q'), t = document.getElementById('qt'), s = document.getElementById('qs');
+  var cur = -1;
+  function show(i, animate){
+    cur = i;
+    var apply = function(){ t.textContent = Q[i].text; s.textContent = Q[i].source; fig.classList.remove('fading'); };
+    if(!animate) return apply();
+    fig.classList.add('fading');
+    setTimeout(apply, 450);
+  }
+  function next(){
+    if(Q.length < 2) return;
+    var i; do { i = Math.floor(Math.random() * Q.length); } while(i === cur);
+    show(i, true);
+  }
+  show(Math.floor(Math.random() * Q.length), false);
+  fig.addEventListener('click', next);
+})();
+</script>
+</body>
+</html>

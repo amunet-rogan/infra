@@ -1,0 +1,34 @@
+{
+  "host": "amunet.tail49d1b.ts.net",
+  "tsip": "100.70.180.58",
+  "lan": "192.168.88.79",
+  "categories": {
+    "rodina": "Pro rodinu",
+    "sync": "Synchronizace",
+    "sprava": "Správa",
+    "vyvoj": "Vývoj",
+    "nastroj": "Martinovy nástroje"
+  },
+  "_routes": "port -> stránka zkouší https://host:port, http://host:port, http://tsip:port, http://lan:port a vezme první, co odpoví. tls:true = dnes za tailscale serve (jen výchozí odkaz bez JS). only:https = jiné cesty nezkoušet. url = pevná adresa.",
+  "groups": {
+    "amunet": "Amunet",
+    "amunet-rogan": "amunet-rogan"
+  },
+  "services": [
+    {"rank": 1, "name": "Immich", "cat": "rodina", "port": 2283, "desc": "Fotky a videa. Zálohy z telefonů, sdílená alba."},
+    {"rank": 2, "name": "Vaultwarden", "cat": "rodina", "port": 8280, "tls": true, "only": "https", "probe": false, "desc": "Trezor hesel. V aplikaci Bitwarden nastav tuhle adresu jako server."},
+    {"rank": 3, "name": "AdGuard Home", "cat": "sprava", "port": 3080, "desc": "DNS celé sítě a blokování reklam. Když něco nejde přeložit, začni tady."},
+    {"rank": 4, "name": "Paperless", "cat": "rodina", "port": 8300, "tls": true, "desc": "Dokumenty — skeny, smlouvy, faktury. Každý má vlastní prostor."},
+    {"rank": 5, "name": "DSM", "cat": "sprava", "url": "https://amunet.synology.me:9091/", "desc": "Synology administrace. Veřejná adresa — funguje i bez Tailscale."},
+    {"rank": 6, "name": "Syncthing — jenda", "cat": "sync", "port": 8384, "desc": "Synchronizace složek mezi zařízeními."},
+    {"rank": 7, "name": "Syncthing — arunacala", "cat": "sync", "port": 8385, "desc": "Synchronizace složek, instance pro tátu."},
+    {"rank": 8, "name": "Obsidian LiveSync", "cat": "sync", "port": 5984, "path": "/_utils/", "tls": true, "desc": "CouchDB za synchronizací poznámek v Obsidianu. Administrace databáze."},
+    {"rank": 9, "name": "Karakeep", "cat": "rodina", "port": 3001, "desc": "Záložky a články na později, s fulltextem."},
+    {"rank": 10, "name": "Forgejo", "cat": "vyvoj", "port": 3000, "desc": "Vlastní Git server."},
+    {"rank": 11, "name": "Portainer", "cat": "sprava", "port": 9443, "tls": true, "only": "https", "probe": false, "desc": "Správa Docker kontejnerů. Prohlížeč upozorní na certifikát — to je v pořádku."},
+    {"rank": 12, "name": "Anubis 2", "cat": "vyvoj", "port": 8089, "tls": true, "desc": "Jendův agent a přehled projektů."},
+    {"rank": 13, "name": "Losování soutěží", "cat": "nastroj", "url": "/sky_max/losovani-soutezi/", "desc": "sky_max/losovani-soutezi", "group": "amunet-rogan"},
+    {"rank": 14, "name": "Carousel generator", "cat": "nastroj", "url": "/sky_max/carousel-generator/", "desc": "sky_max/carousel-generator", "group": "amunet-rogan"},
+    {"rank": 15, "name": "Some report", "cat": "nastroj", "url": "/sky_max/some-report/", "desc": "sky_max/some-report", "group": "amunet-rogan"}
+  ]
+}

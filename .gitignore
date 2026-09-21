@@ -7,3 +7,6 @@ amunet/runner/data/
 .vscode/
 .idea/
 *.log
+
+# handbook build deps
+site-src/node_modules/

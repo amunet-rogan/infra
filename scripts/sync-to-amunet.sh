@@ -20,7 +20,7 @@ echo "→ Remote base: $REMOTE_BASE"
 echo ""
 
 # Make sure remote dirs exist
-ssh "$AMUNET_HOST" "mkdir -p $REMOTE_BASE/tools $REMOTE_BASE/runner/data" \
+ssh "$AMUNET_HOST" "mkdir -p $REMOTE_BASE/tools $REMOTE_BASE/runner/data $REMOTE_BASE/site" \
   2>&1 | grep -v "post-quantum\|See https://openssh" || true
 
 # -----------------------------------------------------------------------------
@@ -71,6 +71,33 @@ echo "→ Syncing tools/ (atomic full replace)"
 
   echo "  ✓ tools/ swap complete"
 '
+
+# -----------------------------------------------------------------------------
+# Sync site/ — web servisovany na http://amunet.tail49d1b.ts.net/
+# (rozcestnik, /sluzby/, /pro-martina/). Rebuild: cd site-src && bun run build
+# Atomicky swap celeho stromu, at nikdy nevisi pul stary / pul novy web.
+# -----------------------------------------------------------------------------
+echo "→ Syncing site/"
+if [[ -f "$REPO_ROOT/amunet/site/index.html" ]]; then
+  (
+    cd "$REPO_ROOT/amunet/site"
+    tar -cf - .
+  ) | ssh "$AMUNET_HOST" '
+    set -eu
+    B="'"$REMOTE_BASE"'"
+    rm -rf "$B/site.new" && mkdir -p "$B/site.new"
+    tar -xf - -C "$B/site.new"
+    find "$B/site.new" -type d -exec chmod 755 {} +
+    find "$B/site.new" -type f -exec chmod 644 {} +
+    rm -rf "$B/site.old"
+    [ -d "$B/site" ] && mv "$B/site" "$B/site.old"
+    mv "$B/site.new" "$B/site"
+    rm -rf "$B/site.old"
+    echo "  ✓ site/ swap complete"
+  ' 2>&1 | grep -v "post-quantum\|See https://openssh" || true
+else
+  echo "  ⚠ amunet/site/index.html missing — run: cd site-src && bun run build" >&2
+fi
 
 echo "→ Syncing runner/ (compose + .env.example only, preserves .env)"
 scp -O -q "$REPO_ROOT/amunet/runner/docker-compose.yml" \

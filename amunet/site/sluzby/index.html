@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex, nofollow">
+<title>Seznam služeb — Amunet</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='11' fill='none' stroke='%23a8761f' stroke-width='3'/></svg>">
+<style>
+:root{
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --bg:#faf8f4; --fg:#1c1917; --dim:#6b625a; --line:#ddd4c6;
+  --card:#fffdfa; --accent:#a8761f; --accent-soft:#f5e9d2;
+  --code-bg:#f2ece1; --warn-bg:#fdf6e3; --warn-line:#d9a441;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#16140f; --fg:#eee8dd; --dim:#9a9084; --line:#3a3428;
+    --card:#1f1c15; --accent:#e0b158; --accent-soft:#2e2718;
+    --code-bg:#221e16; --warn-bg:#26200f; --warn-line:#7a6224; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-underline-offset:3px}
+code{font-family:var(--mono);font-size:.855em;background:var(--code-bg);
+  padding:.14em .38em;border-radius:5px;overflow-wrap:break-word}
+.back{color:inherit;text-decoration:none}
+.back:hover span{text-decoration:underline}
+
+:root{--ok:#3f8f4f;--bad:#c2452d}
+@media (prefers-color-scheme:dark){:root{--ok:#6cc27c;--bad:#e8735a}}
+header{position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top);
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:1px solid var(--line)}
+.hwrap{max-width:760px;margin:0 auto;padding:.75rem 1.1rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.brand{font-weight:700;letter-spacing:-.02em;font-size:1.02rem}
+.brand span{color:var(--accent)}
+.sort{margin-left:auto;display:inline-flex;background:var(--card);border:1px solid var(--line);
+  border-radius:99px;padding:3px}
+.sort button{font:600 .8rem/1 var(--sans);color:var(--dim);background:0;border:0;border-radius:99px;
+  padding:0 .9rem;min-height:36px;cursor:pointer}
+.sort button[aria-pressed=true]{background:var(--accent-soft);color:var(--accent)}
+main{max-width:760px;margin:0 auto;padding:1.4rem 1.1rem 4rem}
+h1{font-size:1.5rem;letter-spacing:-.025em;margin:.2rem 0 .3rem}
+.lede{color:var(--dim);font-size:.92rem;margin:0 0 1.3rem}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.grp{font:700 .7rem/1 var(--sans);text-transform:uppercase;letter-spacing:.08em;color:var(--dim);
+  padding:1.1rem .2rem .2rem;display:flex;align-items:baseline;gap:.5rem}
+.grp:first-child{padding-top:.2rem}
+.grp small{font-weight:500;text-transform:none;letter-spacing:0;font-size:.74rem}
+.svc a{display:flex;align-items:flex-start;gap:.8rem;padding:.9rem 1rem;min-height:64px;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  color:var(--fg);text-decoration:none;transition:border-color .15s}
+.svc a:hover{border-color:var(--accent)}
+.dot{flex:0 0 auto;width:.62rem;height:.62rem;margin-top:.42rem;border-radius:50%;
+  background:var(--line);transition:background .3s}
+.dot[data-state=checking]{animation:pulse 1.2s ease-in-out infinite}
+.dot[data-state=up]{background:var(--ok)}
+.dot[data-state=down]{background:var(--bad)}
+@keyframes pulse{50%{opacity:.35}}
+.body{flex:1;min-width:0;display:flex;flex-direction:column;gap:.18rem}
+.body b{font-size:1rem;letter-spacing:-.01em}
+.desc{font-size:.86rem;color:var(--dim);line-height:1.45}
+.meta{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin-top:.2rem}
+.addr{font-size:.72rem;color:var(--dim);overflow-wrap:anywhere}
+.via{font:700 .6rem/1 var(--mono);letter-spacing:.05em;padding:.28rem .4rem;border-radius:5px;
+  border:1px solid var(--line);color:var(--dim)}
+.via:empty{display:none}
+.via[data-kind=https]{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+.via[data-kind=ip],.via[data-kind=lan]{color:var(--bad);border-color:currentColor}
+.hwrap{position:relative}
+.info summary{list-style:none;cursor:pointer;position:relative;display:grid;place-items:center;
+  width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--line);
+  -webkit-tap-highlight-color:transparent}
+.info summary::-webkit-details-marker{display:none}
+.info .q{font:700 1rem/1 var(--sans);color:var(--dim)}
+.info[open] summary{border-color:var(--accent)}
+.info[open] .q{color:var(--fg)}
+.info .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;
+  border-radius:99px;display:grid;place-items:center;font:700 .66rem/1 var(--mono);
+  background:var(--accent);color:var(--card);border:2px solid var(--bg)}
+.info.has-warn .badge{background:var(--bad)}
+.info .bubble{position:absolute;z-index:15;top:calc(100% - .1rem);right:1.1rem;
+  width:min(440px,calc(100% - 2.2rem));max-height:70vh;overflow:auto;
+  padding:.3rem .95rem;background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 12px 34px rgba(0,0,0,.22);font-size:.84rem;line-height:1.5}
+.msg{padding:.7rem 0;border-top:1px solid var(--line)}
+.msg:not([hidden]) ~ .msg{border-top:1px solid var(--line)}
+.bubble .msg:first-of-type,.bubble .msg[hidden] + .msg{border-top:0}
+.msg b{display:block;font-size:.86rem}
+.msg.warn b{color:var(--bad)}
+.msg p{margin:.3rem 0 0;color:var(--dim)}
+.msg ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:.3rem;margin:.45rem 0 0}
+.msg li{font-size:.76rem;padding:.2rem .45rem;border-radius:5px;background:var(--code-bg)}
+.cat{flex:0 0 auto;font:600 .64rem/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;
+  color:var(--accent);background:var(--accent-soft);border-radius:99px;padding:.34rem .5rem;margin-top:.15rem}
+.legend{margin-top:1.6rem;font-size:.78rem;color:var(--dim);display:flex;gap:1rem;flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:.5rem;height:.5rem;border-radius:50%;
+  margin-right:.4rem;vertical-align:.05rem;background:var(--line)}
+.legend .nodot::before{display:none}
+.legend .l-up::before{background:var(--ok)} .legend .l-down::before{background:var(--bad)}
+@media (max-width:480px){
+  .cat{display:none}
+  .hwrap{padding:.6rem .95rem} main{padding:1.1rem .95rem 3.5rem}
+}
+@media (prefers-reduced-motion:reduce){.dot[data-state=checking]{animation:none}}
+</style>
+</head>
+<body data-host="amunet.tail49d1b.ts.net">
+<header>
+  <div class="hwrap">
+    <a class="brand back" href="../">Amunet <span>/ služby</span></a>
+    <div class="sort" role="group" aria-label="Řazení">
+      <button type="button" data-sort="group" aria-pressed="true">Skupiny</button>
+      <button type="button" data-sort="name" aria-pressed="false">A–Z</button>
+    </div>
+    <details class="info" id="pop-info" hidden>
+      <summary aria-label="Upozornění"><span class="q">?</span><span class="badge" id="info-count"></span></summary>
+      <div class="bubble">
+        <section class="msg warn" id="sec-hsts" hidden><b>Prohlížeč vynucuje HTTPS</b><p id="n-hsts"></p></section>
+        <section class="msg warn" id="sec-dns" hidden><b>Jméno se nepřekládá</b><p id="n-dns"></p></section>
+        <section class="msg" id="sec-https" hidden><b>Otevřeno přes HTTPS</b><p id="n-https"></p></section>
+        <section class="msg" id="sec-http" hidden>
+          <b>Zatím bez tailscale serve</b>
+          <ul id="n-http"></ul>
+          <p>Jedou jen přes holé HTTP. Uvnitř tailnetu je provoz šifrovaný WireGuardem,
+            prohlížeč je ale značí jako „nezabezpečené“ a některé funkce (schránka, PWA) nemusí jít.</p>
+        </section>
+      </div>
+    </details>
+  </div>
+</header>
+<main>
+  <h1>Seznam služeb</h1>
+  <p class="lede">Vše kromě DSM je dostupné jen přes Tailscale. Stránka u každé služby
+    sama zjistí, jestli jede přes HTTPS, nebo zatím jen přes HTTP.</p>
+  <ul id="list">
+    <li class="svc" data-rank="1" data-name="Immich" data-group="amunet">
+      <a href="http://amunet.tail49d1b.ts.net:2283/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:2283/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:2283/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:2283/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:2283/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="body"><b>Immich</b><span class="desc">Fotky a videa. Zálohy z telefonů, sdílená alba.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:2283</code><span class="via" data-kind="http">HTTP</span></span></span>
+        <span class="cat">Pro rodinu</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="2" data-name="Vaultwarden" data-group="amunet">
+      <a href="https://amunet.tail49d1b.ts.net:8280/">
+        <span class="dot" data-probe="0" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8280/&quot;,&quot;kind&quot;:&quot;tls&quot;}]"></span>
+        <span class="body"><b>Vaultwarden</b><span class="desc">Trezor hesel. V aplikaci Bitwarden nastav tuhle adresu jako server.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:8280</code><span class="via" data-kind="https">HTTPS</span></span></span>
+        <span class="cat">Pro rodinu</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="3" data-name="AdGuard Home" data-group="amunet">
+      <a href="http://amunet.tail49d1b.ts.net:3080/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:3080/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:3080/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:3080/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:3080/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="body"><b>AdGuard Home</b><span class="desc">DNS celé sítě a blokování reklam. Když něco nejde přeložit, začni tady.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:3080</code><span class="via" data-kind="http">HTTP</span></span></span>
+        <span class="cat">Správa</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="4" data-name="Paperless" data-group="amunet">
+      <a href="https://amunet.tail49d1b.ts.net:8300/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8300/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8300/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="body"><b>Paperless</b><span class="desc">Dokumenty — skeny, smlouvy, faktury. Každý má vlastní prostor.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:8300</code><span class="via" data-kind="https">HTTPS</span></span></span>
+        <span class="cat">Pro rodinu</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="5" data-name="DSM" data-group="amunet">
+      <a href="https://amunet.synology.me:9091/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.synology.me:9091/&quot;,&quot;kind&quot;:&quot;fixed&quot;}]"></span>
+        <span class="body"><b>DSM</b><span class="desc">Synology administrace. Veřejná adresa — funguje i bez Tailscale.</span>
+          <span class="meta"><code class="addr">amunet.synology.me:9091</code><span class="via" data-kind="https">HTTPS</span></span></span>
+        <span class="cat">Správa</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="6" data-name="Syncthing — jenda" data-group="amunet">
+      <a href="http://amunet.tail49d1b.ts.net:8384/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8384/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:8384/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:8384/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8384/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="body"><b>Syncthing — jenda</b><span class="desc">Synchronizace složek mezi zařízeními.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:8384</code><span class="via" data-kind="http">HTTP</span></span></span>
+        <span class="cat">Synchronizace</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="7" data-name="Syncthing — arunacala" data-group="amunet">
+      <a href="http://amunet.tail49d1b.ts.net:8385/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8385/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:8385/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:8385/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8385/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="body"><b>Syncthing — arunacala</b><span class="desc">Synchronizace složek, instance pro tátu.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:8385</code><span class="via" data-kind="http">HTTP</span></span></span>
+        <span class="cat">Synchronizace</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="8" data-name="Obsidian LiveSync" data-group="amunet">
+      <a href="https://amunet.tail49d1b.ts.net:5984/_utils/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:5984/_utils/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:5984/_utils/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="body"><b>Obsidian LiveSync</b><span class="desc">CouchDB za synchronizací poznámek v Obsidianu. Administrace databáze.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:5984/_utils/</code><span class="via" data-kind="https">HTTPS</span></span></span>
+        <span class="cat">Synchronizace</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="9" data-name="Karakeep" data-group="amunet">
+      <a href="http://amunet.tail49d1b.ts.net:3001/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:3001/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:3001/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:3001/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:3001/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="body"><b>Karakeep</b><span class="desc">Záložky a články na později, s fulltextem.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:3001</code><span class="via" data-kind="http">HTTP</span></span></span>
+        <span class="cat">Pro rodinu</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="10" data-name="Forgejo" data-group="amunet">
+      <a href="http://amunet.tail49d1b.ts.net:3000/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:3000/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:3000/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:3000/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:3000/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="body"><b>Forgejo</b><span class="desc">Vlastní Git server.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:3000</code><span class="via" data-kind="http">HTTP</span></span></span>
+        <span class="cat">Vývoj</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="11" data-name="Portainer" data-group="amunet">
+      <a href="https://amunet.tail49d1b.ts.net:9443/">
+        <span class="dot" data-probe="0" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:9443/&quot;,&quot;kind&quot;:&quot;tls&quot;}]"></span>
+        <span class="body"><b>Portainer</b><span class="desc">Správa Docker kontejnerů. Prohlížeč upozorní na certifikát — to je v pořádku.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:9443</code><span class="via" data-kind="https">HTTPS</span></span></span>
+        <span class="cat">Správa</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="12" data-name="Anubis 2" data-group="amunet">
+      <a href="https://amunet.tail49d1b.ts.net:8089/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8089/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8089/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="body"><b>Anubis 2</b><span class="desc">Jendův agent a přehled projektů.</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:8089</code><span class="via" data-kind="https">HTTPS</span></span></span>
+        <span class="cat">Vývoj</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="13" data-name="Losování soutěží" data-group="amunet-rogan">
+      <a href="/sky_max/losovani-soutezi/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;/sky_max/losovani-soutezi/&quot;,&quot;kind&quot;:&quot;fixed&quot;}]"></span>
+        <span class="body"><b>Losování soutěží</b><span class="desc">sky_max/losovani-soutezi</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net/sky_max/losovani-soutezi/</code><span class="via" data-kind=""></span></span></span>
+        <span class="cat">Martinovy nástroje</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="14" data-name="Carousel generator" data-group="amunet-rogan">
+      <a href="/sky_max/carousel-generator/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;/sky_max/carousel-generator/&quot;,&quot;kind&quot;:&quot;fixed&quot;}]"></span>
+        <span class="body"><b>Carousel generator</b><span class="desc">sky_max/carousel-generator</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net/sky_max/carousel-generator/</code><span class="via" data-kind=""></span></span></span>
+        <span class="cat">Martinovy nástroje</span>
+      </a>
+    </li>
+    <li class="svc" data-rank="15" data-name="Some report" data-group="amunet-rogan">
+      <a href="/sky_max/some-report/">
+        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;/sky_max/some-report/&quot;,&quot;kind&quot;:&quot;fixed&quot;}]"></span>
+        <span class="body"><b>Some report</b><span class="desc">sky_max/some-report</span>
+          <span class="meta"><code class="addr">amunet.tail49d1b.ts.net/sky_max/some-report/</code><span class="via" data-kind=""></span></span></span>
+        <span class="cat">Martinovy nástroje</span>
+      </a>
+    </li>
+  </ul>
+  <div class="legend">
+    <span class="l-up">odpovídá</span><span class="l-down">neodpovídá</span><span>neověřeno</span>
+    <span class="nodot"><b>HTTPS</b> za tailscale serve · <b>HTTP</b> holý port · <b>IP / LAN</b> jméno se nepřeložilo</span>
+  </div>
+</main>
+<script>
+(function(){
+  var list = document.getElementById('list');
+  var items = [].slice.call(list.children);
+  var btns = [].slice.call(document.querySelectorAll('.sort button'));
+  var KEY = 'amunet:services:sort';
+
+  var GROUPS = {"amunet":"Amunet","amunet-rogan":"amunet-rogan"};
+  var GORDER = Object.keys(GROUPS);
+  var GNOTE = {'amunet-rogan': 'nástroje nasazené z GitHubu'};
+
+  function sortBy(mode){
+    [].slice.call(list.querySelectorAll('.grp')).forEach(function(h){ h.remove(); });
+    if(mode === 'name'){
+      items.sort(function(a,b){ return a.dataset.name.localeCompare(b.dataset.name, 'cs'); });
+      items.forEach(function(li){ list.appendChild(li); });
+    } else {
+      mode = 'group';
+      items.sort(function(a,b){
+        return (GORDER.indexOf(a.dataset.group) - GORDER.indexOf(b.dataset.group)) || (a.dataset.rank - b.dataset.rank);
+      });
+      var last = null;
+      items.forEach(function(li){
+        if(li.dataset.group !== last){
+          last = li.dataset.group;
+          var h = document.createElement('li');
+          h.className = 'grp'; h.setAttribute('role', 'presentation');
+          h.textContent = GROUPS[last];
+          if(GNOTE[last]){ var sm = document.createElement('small'); sm.textContent = GNOTE[last]; h.appendChild(sm); }
+          list.appendChild(h);
+        }
+        list.appendChild(li);
+      });
+    }
+    btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.sort === mode)); });
+    try{ localStorage.setItem(KEY, mode); }catch(e){}
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ sortBy(b.dataset.sort); }); });
+  var saved = null; try{ saved = localStorage.getItem(KEY); }catch(e){}
+  sortBy(saved === 'name' ? 'name' : 'group');
+
+  // Dostupnost a cesta. Kazda sluzba nese kandidatni cesty v poradi
+  // https(jmeno) -> http(jmeno) -> http(tailnet IP) -> http(LAN). Vsechny se
+  // zkousi naraz (no-cors fetch: jakakoliv odpoved = ziva, sitova chyba = ne)
+  // a pouzije se prvni v poradi, ktera odpovi.
+  // Vaultwarden (CORP same-origin) a Portainer (self-signed) browser poctive
+  // overit nedokaze -> probe=0, zustavaji neutralni.
+  var LABEL = {tls:'HTTPS', name:'HTTP', ip:'HTTP · IP', lan:'HTTP · LAN'};
+  var HOST = document.body.dataset.host;
+  var onHttps = location.protocol === 'https:';
+  var stats = {http:[], fallback:0, blind:0};
+
+  function probe(url){
+    return new Promise(function(res){
+      var ctl = ('AbortController' in window) ? new AbortController() : null;
+      var t = setTimeout(function(){ ctl && ctl.abort(); res(false); }, 5000);
+      fetch(url, {mode:'no-cors', cache:'no-store', signal: ctl && ctl.signal})
+        .then(function(){ clearTimeout(t); res(true); },
+              function(){ clearTimeout(t); res(false); });
+    });
+  }
+
+  function apply(li, r){
+    var a = li.querySelector('a'), via = li.querySelector('.via'), addr = li.querySelector('.addr');
+    var u = new URL(r.url, location.href);
+    a.href = r.url;
+    addr.textContent = u.host + (u.pathname === '/' ? '' : u.pathname);
+    if(r.kind === 'fixed'){
+      via.textContent = r.url.charAt(0) === '/' ? '' : u.protocol.slice(0,-1).toUpperCase();
+      via.dataset.kind = u.protocol === 'https:' ? 'https' : 'http';
+    } else {
+      via.textContent = LABEL[r.kind];
+      via.dataset.kind = r.kind === 'tls' ? 'https' : (r.kind === 'name' ? 'http' : r.kind);
+    }
+  }
+
+  var jobs = items.map(function(li){
+    var dot = li.querySelector('.dot');
+    if(dot.dataset.probe === '0') return Promise.resolve();
+    var all = JSON.parse(dot.dataset.routes);
+    var routes = all.filter(function(r){
+      // http cil z https stranky prohlizec zablokuje (mixed content)
+      return !(onHttps && new URL(r.url, location.href).protocol === 'http:');
+    });
+    if(!routes.length){
+      // Nejde overit. Pro holy HTTP je nejodolnejsi tailnet IP: nezavisi
+      // na DNS ani na HSTS, ktere umi prepsat http://jmeno na https.
+      var ip = all.filter(function(r){ return r.kind === 'ip'; })[0];
+      if(ip){ apply(li, ip); stats.http.push(li.dataset.name); }
+      stats.blind++;
+      return Promise.resolve();
+    }
+    dot.dataset.state = 'checking';
+    var ps = routes.map(function(r){ return probe(new URL(r.url, location.href).href); });
+    var i = 0;
+    function step(){
+      if(i >= ps.length){ dot.dataset.state = 'down'; dot.title = 'neodpovídá'; return; }
+      return ps[i].then(function(ok){
+        if(!ok){ i++; return step(); }
+        var r = routes[i];
+        apply(li, r);
+        dot.dataset.state = 'up'; dot.title = 'odpovídá · ' + r.url;
+        if(r.kind !== 'tls' && r.kind !== 'fixed') stats.http.push(li.dataset.name);
+        if(r.kind === 'ip' || r.kind === 'lan') stats.fallback++;
+      });
+    }
+    return step();
+  });
+
+  // Proc selhalo http://jmeno, kdyz IP funguje? Bud se jmeno neprelozi (DNS),
+  // nebo se prelozi, ale prohlizec http na nem prepisuje na https (HSTS).
+  // Bezi-li stranka sama na jmenu, nebo odpovi https://jmeno/, DNS je v poradku.
+  function diagnose(){
+    if(!stats.fallback) return Promise.resolve(null);
+    if(location.hostname === HOST) return Promise.resolve('hsts');
+    return probe('https://' + HOST + '/').then(function(ok){ return ok ? 'hsts' : 'dns'; });
+  }
+
+  Promise.all(jobs).then(diagnose).then(function(cause){
+    var box = document.getElementById('pop-info'), n = 0, warn = false;
+    function show(sec, noteId, text){
+      if(noteId) document.getElementById(noteId).textContent = text;
+      document.getElementById(sec).hidden = false;
+      n++; if(document.getElementById(sec).classList.contains('warn')) warn = true;
+    }
+    if(cause === 'hsts') show('sec-hsts', 'n-hsts',
+      'Tenhle prohlížeč si pro ' + HOST + ' pamatuje „jen HTTPS“ (HSTS), takže služby na holém HTTP ' +
+      'přes jméno neotevře — odkazy proto vedou přes IP. Pravidlo jde smazat v chrome://net-internals/#hsts ' +
+      '(ve Vivaldi vivaldi://net-internals/#hsts) → Delete domain security policies. ' +
+      'Trvalé řešení je dát tyhle služby za tailscale serve.');
+    if(cause === 'dns') show('sec-dns', 'n-dns',
+      'Jméno ' + HOST + ' se v tomhle zařízení nepřekládá, odkazy proto vedou přes IP. ' +
+      'Zapni Tailscale DNS: Tailscale set --accept-dns=true.');
+    if(stats.blind) show('sec-https', 'n-https',
+      'Služby na holém HTTP nejde z HTTPS stránky ověřit; odkazy na ně vedou přes IP. ' +
+      'Pro plnou kontrolu otevři http://' + HOST + '/sluzby/');
+    if(stats.http.length){
+      var ul = document.getElementById('n-http');
+      stats.http.forEach(function(s){ var li = document.createElement('li'); li.textContent = s; ul.appendChild(li); });
+      show('sec-http');
+    }
+    if(n){
+      document.getElementById('info-count').textContent = n;
+      box.classList.toggle('has-warn', warn);
+      box.hidden = false;
+    }
+    document.body.dataset.probed = cause || '1';
+  });
+
+  // Balonek: zavrit klepnutim mimo nebo Esc
+  var info = document.getElementById('pop-info');
+  document.addEventListener('click', function(e){ if(info.open && !info.contains(e.target)) info.open = false; });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') info.open = false; });
+})();
+</script>
+</body>
+</html>

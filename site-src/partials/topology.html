@@ -1,0 +1,49 @@
+<div class="topo">
+
+  <div class="topo-row">
+    <div class="node">
+      <b>Tvoje zařízení</b>
+      <span>MacBook M3 Max</span>
+      <span>telefon</span>
+      <em>+ Tailscale</em>
+    </div>
+    <div class="node is-accent">
+      <b>Tailscale</b>
+      <span>privátní šifrovaná síť</span>
+      <span>funguje odkudkoliv</span>
+      <em>tail49d1b.ts.net</em>
+    </div>
+    <div class="node">
+      <b>Amunet</b>
+      <span>Synology DS920+</span>
+      <span>NAS u Jendy doma</span>
+      <em>~30 kontejnerů</em>
+    </div>
+  </div>
+
+  <p class="topo-cap">Co na Amunetu poslouchá</p>
+
+  <div class="topo-grid">
+    <div class="node">
+      <b>nginx — port 80</b>
+      <span><code>/</code> → rozcestník, služby, tahle příručka</span>
+      <span><code>/sky_max/&lt;nastroj&gt;/</code> → tvoje nástroje</span>
+    </div>
+    <div class="node">
+      <b>Ostatní služby</b>
+      <span>Vaultwarden — hesla, <code>:8280</code></span>
+      <span>AdGuard Home — DNS a reklamy</span>
+      <span>Immich — fotky, <code>:2283</code></span>
+    </div>
+  </div>
+
+  <p class="topo-cap">Jak se tvůj kód dostane na Amunet</p>
+
+  <ol class="topo-flow">
+    <li><code>git push</code></li>
+    <li>GitHub Actions sestaví image</li>
+    <li>runner na Amunetu ho stáhne</li>
+    <li class="is-hl">nástroj běží na své adrese</li>
+  </ol>
+
+</div>
