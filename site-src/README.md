@@ -15,6 +15,10 @@ Sdílené styly: `base.css` (vkládá se jako `{{BASE_CSS}}`).
 - **Nová služba / pořadí** — `data/services.json`. `rank` = výchozí řazení (1 = nahoře),
   musí být unikátní. `"probe": false` pro služby, které browser nedokáže ověřit
   (self-signed cert, nebo `Cross-Origin-Resource-Policy: same-origin` — Vaultwarden).
+- **Nový amunet-rogan nástroj** — přidá ho `scripts/onboard-tool.sh` sám (přes
+  `add-service.ts`); pak jen oprav `name`/`desc`. Ručně: `bun run add-service.ts <user> <tool>`.
+  `bun run build` varuje, když nasazené nástroje (`amunet/tools`) a JSON nesedí;
+  záměrně skryté nástroje patří do `ignoreTools`.
 - **Cesty ke službám** — služba s `port` (místo `url`) dostane kandidáty
   `https://jméno:port` → `http://jméno:port` → `http://100.70.180.58:port` → `http://LAN:port`;
   stránka je za běhu vyzkouší a použije první, co odpoví. Přesun služby za

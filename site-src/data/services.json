@@ -9,6 +9,8 @@
     "vyvoj": "Vývoj",
     "nastroj": "Martinovy nástroje"
   },
+  "ignoreTools": ["sky_max/smoke-test"],
+  "_ignoreTools": "nasazene nastroje (amunet/tools/*/*/config.env), ktere na strance zamerne nejsou",
   "_routes": "port -> stránka zkouší https://host:port, http://host:port, http://tsip:port, http://lan:port a vezme první, co odpoví. tls:true = dnes za tailscale serve (jen výchozí odkaz bez JS). only:https = jiné cesty nezkoušet. url = pevná adresa.",
   "groups": {
     "amunet": "Amunet",

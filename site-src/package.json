@@ -6,7 +6,8 @@
   "description": "Zdroj pro http://amunet.tail49d1b.ts.net/ - prirucka k infrastrukture",
   "scripts": {
     "build": "bun run build.ts",
-    "check": "bun run check.ts"
+    "check": "bun run check.ts",
+    "add-service": "bun run add-service.ts"
   },
   "dependencies": {
     "marked": "^15.0.7"

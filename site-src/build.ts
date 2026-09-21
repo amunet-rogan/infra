@@ -9,6 +9,7 @@
 // nginx servisuje jen tyhle tri cesty — viz scripts/regenerate-nginx-conf.sh.
 
 import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { marked } from "marked";
@@ -52,7 +53,8 @@ await rm(OUT, { recursive: true, force: true });
 type Quote = { text: string; source: string };
 const quotes: Quote[] = JSON.parse(await read("data/quotes.json"));
 if (!quotes.length) throw new Error("data/quotes.json je prazdny");
-const first = quotes[Math.floor(Math.random() * quotes.length)];
+// no-JS vychozi = prvni citat: deterministicky build, zadny sum v diffech (JS si vybere nahodne)
+const first = quotes[0];
 await emit("index.html", fill(await read("templates/home.html"), {
   BASE_CSS,
   QUOTE_TEXT: esc(first.text),
@@ -71,7 +73,7 @@ type Svc = {
 };
 type Route = { url: string; kind: "tls" | "name" | "ip" | "lan" | "fixed" };
 const sdata: { host: string; tsip: string; lan: string; categories: Record<string, string>;
-  groups: Record<string, string>; services: Svc[] } =
+  groups: Record<string, string>; ignoreTools?: string[]; services: Svc[] } =
   JSON.parse(await read("data/services.json"));
 
 const ranks = new Set<number>();
@@ -81,6 +83,29 @@ for (const s of sdata.services) {
   if (ranks.has(s.rank)) throw new Error(`${s.name}: duplicitni rank ${s.rank}`);
   if (!!s.url === !!s.port) throw new Error(`${s.name}: potrebuje presne jedno z "url" / "port"`);
   ranks.add(s.rank);
+}
+
+// Soulad s nasazenymi nastroji: kazdy amunet/tools/<user>/<tool>/config.env
+// ma mit zaznam v services.json (nebo byt v ignoreTools) a naopak.
+// Onboarding to dela sam (onboard-tool.sh -> add-service.ts); tohle chyta,
+// kdyz se to obejde.
+{
+  const TOOLS = join(HERE, "..", "amunet", "tools");
+  const deployed = new Set<string>();
+  if (existsSync(TOOLS)) {
+    for (const u of await readdir(TOOLS, { withFileTypes: true })) {
+      if (!u.isDirectory()) continue;
+      for (const t of await readdir(join(TOOLS, u.name), { withFileTypes: true })) {
+        if (t.isDirectory() && existsSync(join(TOOLS, u.name, t.name, "config.env"))) deployed.add(`${u.name}/${t.name}`);
+      }
+    }
+  }
+  const ignore = new Set(sdata.ignoreTools ?? []);
+  const listed = new Set(sdata.services.filter(s => s.url?.match(/^\/[^/]+\/[^/]+\/$/)).map(s => s.url!.slice(1, -1)));
+  const missing = [...deployed].filter(t => !listed.has(t) && !ignore.has(t));
+  const orphan = [...listed].filter(t => !deployed.has(t));
+  for (const t of missing) console.warn(`  ⚠ nastroj ${t} je nasazeny, ale neni v data/services.json → bun run add-service.ts ${t.replace("/", " ")}`);
+  for (const t of orphan) console.warn(`  ⚠ ${t} je v data/services.json, ale nema config.env (offboardovany?) → smaz zaznam`);
 }
 
 function routes(s: Svc): Route[] {

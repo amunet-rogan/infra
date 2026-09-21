@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Onboard a new tool: allocates a port, writes config.env, regenerates nginx conf.
+# Onboard a new tool: allocates a port, writes config.env, regenerates nginx conf,
+# adds the tool to the services page (site-src/data/services.json) and rebuilds the site.
 # Does NOT commit or sync — run git add/commit and sync-to-amunet.sh after reviewing.
 #
 # Usage:  ./scripts/onboard-tool.sh <user> <tool>
@@ -66,9 +67,23 @@ echo "✓ Created $TOOL_DIR/config.env"
 
 "$REPO_ROOT/scripts/regenerate-nginx-conf.sh"
 
+# Services page (http://amunet.tail49d1b.ts.net/sluzby/) — add the tool and rebuild.
+SITE_OK=0
+if command -v bun >/dev/null 2>&1 && [[ -d "$REPO_ROOT/site-src/node_modules" ]]; then
+    ( cd "$REPO_ROOT/site-src" && bun run add-service.ts "$USER_NAME" "$TOOL_NAME" && bun run build.ts >/dev/null ) \
+        && SITE_OK=1 && echo "✓ Rebuilt site (amunet/site/)"
+fi
+if (( ! SITE_OK )); then
+    echo "" >&2
+    echo "⚠ Services page NOT updated (bun or site-src/node_modules missing). Do it by hand:" >&2
+    echo "    cd \"$REPO_ROOT/site-src\" && bun install && bun run add-service.ts $USER_NAME $TOOL_NAME && bun run build" >&2
+fi
+
 echo ""
 echo "Next steps:"
-echo "  git -C \"$REPO_ROOT\" add amunet/ && git -C \"$REPO_ROOT\" commit -m 'Onboard $USER_NAME/$TOOL_NAME'"
-echo "  \"$REPO_ROOT/scripts/sync-to-amunet.sh\""
+echo "  1. Give it a real name + description:  site-src/data/services.json  (search \"/$USER_NAME/$TOOL_NAME/\")"
+echo "     then:  (cd \"$REPO_ROOT/site-src\" && bun run build)"
+echo "  2. git -C \"$REPO_ROOT\" add amunet/ site-src/data/services.json && git -C \"$REPO_ROOT\" commit -m 'Onboard $USER_NAME/$TOOL_NAME'"
+echo "  3. \"$REPO_ROOT/scripts/sync-to-amunet.sh\""
 echo ""
 echo "Tool URL (once deployed): http://amunet.tail49d1b.ts.net/$USER_NAME/$TOOL_NAME/"
