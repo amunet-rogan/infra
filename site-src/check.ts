@@ -81,7 +81,9 @@ async function open(path: string, vp = VIEWPORTS[0]) {
     const src = m.location()?.url ?? "";
     // Lokalni mini server neproxuje nastroje jako nginx -> /sky_max/* je tu 404
     if (server && new URL(src || origin).pathname.startsWith("/sky_max/")) return;
-    if (!src || src.startsWith(origin)) errors.push(m.text());
+    // origin vcetne portu: https://amunet…:8384 NENI tahle stranka
+    let same = true; try { same = new URL(src).origin === origin; } catch {}
+    if (!src || same) errors.push(m.text());
   });
   const res = await page.goto(BASE + path, { waitUntil: "load" });
   return { ctx, page, errors, status: res?.status() ?? 0 };
@@ -204,6 +206,11 @@ console.log("── služby");
     for (const [name, want] of Object.entries(EXPECT)) {
       check(got[name] === want, `${name.padEnd(22)} ${want}`, `${name}: cekano ${want}, je ${got[name]}`);
     }
+  }
+  if (new URL(BASE).protocol === "https:") {
+    const im = got["Immich"];
+    check(im === "—:HTTP · IP", "HTTPS stranka: Immich neutralne pres IP", `HTTPS stranka: Immich ${im}`);
+    check(got["Paperless"] === "up:HTTPS", "HTTPS stranka: Paperless overen", `HTTPS stranka: Paperless ${got["Paperless"]}`);
   }
   info(Object.entries(got).filter(([n]) => !EXPECT[n]).map(([n, v]) => `${n}=${v}`).join("  "));
   const note = await page.locator("#n-http").textContent();

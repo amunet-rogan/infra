@@ -218,9 +218,16 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
     }
     dot.dataset.state = 'checking';
     var ps = routes.map(function(r){ return probe(new URL(r.url, location.href).href); });
-    var i = 0;
+    var i = 0, hidden = all.length - routes.length;
     function step(){
-      if(i >= ps.length){ dot.dataset.state = 'down'; dot.title = 'neodpovídá'; return; }
+      if(i >= ps.length){
+        // Nic z overitelneho neodpovedelo, ale http cesty jsme kvuli mixed
+        // content zkusit nesmeli -> nevime. Odkaz na tailnet IP, stav neutralni.
+        var ip = hidden && all.filter(function(r){ return r.kind === 'ip'; })[0];
+        if(ip){ apply(li, ip); delete dot.dataset.state; dot.title = 'neověřeno (HTTPS stránka)';
+                stats.http.push(li.dataset.name); stats.blind++; return; }
+        dot.dataset.state = 'down'; dot.title = 'neodpovídá'; return;
+      }
       return ps[i].then(function(ok){
         if(!ok){ i++; return step(); }
         var r = routes[i];
