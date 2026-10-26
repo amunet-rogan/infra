@@ -141,21 +141,25 @@ jobs:
           cd "${{ steps.paths.outputs.tool_dir }}"
           # Filter out GitHub-auto secrets; keep only user-set ones.
           # docker env_file doesn't need quoting — just KEY=VALUE lines.
+          # Trailing line breaks (a pasted value) are dropped; they only ever
+          # left a blank line after the secret.
           user_secrets=$(echo "$ALL_SECRETS" | jq -c '
-            with_entries(select(.key | test("^(GITHUB_TOKEN|GH_TOKEN|ACTIONS_)"; "i") | not))
+            with_entries(
+              select(.key | test("^(GITHUB_TOKEN|GH_TOKEN|ACTIONS_)"; "i") | not)
+              | .value |= until((endswith("\n") or endswith("\r")) | not; .[:-1]))
           ')
           # docker compose reads this same .env for its own settings
           # (COMPOSE_PROJECT_NAME, COMPOSE_FILE, COMPOSE_PROFILES, DOCKER_HOST, ...),
           # so such a secret could point the deploy at another project on Amunet,
-          # and a line break in a value could smuggle such a line in. Refuse them
-          # rather than drop them, so the tool owner sees why. The previous .env
-          # stays as it was.
+          # and a line break inside a value could smuggle such a line in. Refuse
+          # them rather than drop them, so the tool owner sees why. The previous
+          # .env stays as it was.
           refused=$(echo "$user_secrets" | jq -r '
             to_entries[]
             | if (.key | test("^(COMPOSE_|DOCKER_)"; "i")) then
                 "::error::Secret \(.key) is not allowed: names starting with COMPOSE_ or DOCKER_ are reserved, docker compose reads them from .env as its own settings. Rename or delete it under Settings > Secrets and variables > Actions (repo or org)."
               elif (.value | test("[\r\n]")) then
-                "::error::Secret \(.key) is not allowed: its value has a line break, and .env takes one KEY=VALUE line per secret. Store it on one line (for example base64-encoded)."
+                "::error::Secret \(.key) is not allowed: its value has a line break inside, and .env takes one KEY=VALUE line per secret. Store it on one line (for example base64-encoded)."
               else empty end
           ')
           if [[ -n "$refused" ]]; then
