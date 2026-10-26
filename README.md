@@ -80,6 +80,10 @@ changes cut a `v2` tag; callers migrate deliberately.
 - Tailscale-only access; no public internet exposure
 - Runner registered at org scope only — a compromised tool repo can't target other orgs
 - Per-tool `.env` files are chmod 600, separate per tool; tools can't read each others' secrets
+- `docker compose` also reads the tool's `.env` for its own settings, so the deploy passes
+  `-p <tool> -f docker-compose.yml` explicitly and fails on secrets named `COMPOSE_*` or
+  `DOCKER_*` or with a line break in the value; otherwise a secret like
+  `COMPOSE_PROJECT_NAME` could point `up --remove-orphans` at another project on the NAS
 
 ## Related repos
 

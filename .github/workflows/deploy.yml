@@ -141,11 +141,28 @@ jobs:
           cd "${{ steps.paths.outputs.tool_dir }}"
           # Filter out GitHub-auto secrets; keep only user-set ones.
           # docker env_file doesn't need quoting — just KEY=VALUE lines.
-          echo "$ALL_SECRETS" | jq -r '
+          user_secrets=$(echo "$ALL_SECRETS" | jq -c '
+            with_entries(select(.key | test("^(GITHUB_TOKEN|GH_TOKEN|ACTIONS_)"; "i") | not))
+          ')
+          # docker compose reads this same .env for its own settings
+          # (COMPOSE_PROJECT_NAME, COMPOSE_FILE, COMPOSE_PROFILES, DOCKER_HOST, ...),
+          # so such a secret could point the deploy at another project on Amunet,
+          # and a line break in a value could smuggle such a line in. Refuse them
+          # rather than drop them, so the tool owner sees why. The previous .env
+          # stays as it was.
+          refused=$(echo "$user_secrets" | jq -r '
             to_entries[]
-            | select(.key | test("^(GITHUB_TOKEN|GH_TOKEN|ACTIONS_)"; "i") | not)
-            | "\(.key)=\(.value)"
-          ' > .env
+            | if (.key | test("^(COMPOSE_|DOCKER_)"; "i")) then
+                "::error::Secret \(.key) is not allowed: names starting with COMPOSE_ or DOCKER_ are reserved, docker compose reads them from .env as its own settings. Rename or delete it under Settings > Secrets and variables > Actions (repo or org)."
+              elif (.value | test("[\r\n]")) then
+                "::error::Secret \(.key) is not allowed: its value has a line break, and .env takes one KEY=VALUE line per secret. Store it on one line (for example base64-encoded)."
+              else empty end
+          ')
+          if [[ -n "$refused" ]]; then
+            echo "$refused"
+            exit 1
+          fi
+          echo "$user_secrets" | jq -r 'to_entries[] | "\(.key)=\(.value)"' > .env
           chmod 600 .env
           echo "Wrote $(wc -l < .env) secret(s) to .env"
 
@@ -186,10 +203,16 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull and deploy
+        # Project and file are given explicitly, so nothing in .env can pick them
+        # and --remove-orphans only ever acts on this tool's own project. The name
+        # is the one Compose derived from the tool directory before, so running
+        # containers stay in their project.
+        env:
+          AR_TOOL: ${{ steps.paths.outputs.tool }}
         run: |
           cd "${{ steps.paths.outputs.tool_dir }}"
-          docker compose pull
-          docker compose up -d --remove-orphans
+          docker compose -p "$AR_TOOL" -f docker-compose.yml pull
+          docker compose -p "$AR_TOOL" -f docker-compose.yml up -d --remove-orphans
 
       - name: Report URL
         run: |
