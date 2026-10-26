@@ -26,7 +26,16 @@ services:
       EPHEMERAL: "true"
       # Disable auto-update — we control upgrades by pulling a new image
       DISABLE_AUTO_UPDATE: "true"
+      # Deploy-only hook (2026-10-26): every job that is not the deploy job of
+      # amunet-rogan/infra's deploy.yml@v1, called from a tool repo's
+      # deploy.yml on main, fails at "Set up runner" before its first step.
+      # Labels cannot do this: any workflow in the org can ask for them, and
+      # this runner is root on Amunet. The hook lives in Amunet's infra repo
+      # (/volume1/docker/github-runner/hooks/amunet-rogan-deploy-only.sh,
+      # shared checks in deploy-only.sh); retagging to v2 needs it changed.
+      ACTIONS_RUNNER_HOOK_JOB_STARTED: /hooks/amunet-rogan-deploy-only.sh
     volumes:
+      - /volume1/docker/github-runner/hooks:/hooks:ro
       # Docker socket: required to run 'docker compose up' in deploy jobs.
       # This makes the runner effectively root on the host — trust boundary.
       - /var/run/docker.sock:/var/run/docker.sock
