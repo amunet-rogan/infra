@@ -73,6 +73,10 @@ HEADER
     # i kdyz je stranka otevrena pres HTTPS (prime http:// sondy by prohlizec
     # zablokoval jako mixed content). Jen HEAD, jen porty ze services.json,
     # klient dostane jen status: 502/504 = nebezi, cokoliv jineho = bezi.
+    # Hlavicky, podle kterych by prohlizec neco udelal, se nepropousti — odpoved
+    # je pod originem stranky: WWW-Authenticate (CouchDB 401) by otevrel prihlasovaci
+    # okno, Link (Karakeep) prednacital cizi fonty, HSTS by pripnul jmeno na https,
+    # Clear-Site-Data by smazal localStorage.
     probe_block() {  # probe_block <regex of ports> <scheme> [extra directive]
         [[ -n $1 ]] || return 0
         cat <<PROBE
@@ -85,6 +89,13 @@ HEADER
         proxy_read_timeout 4s;
         proxy_hide_header Location;
         proxy_hide_header Set-Cookie;
+        proxy_hide_header WWW-Authenticate;
+        proxy_hide_header Proxy-Authenticate;
+        proxy_hide_header Link;
+        proxy_hide_header Refresh;
+        proxy_hide_header Strict-Transport-Security;
+        proxy_hide_header Clear-Site-Data;
+        proxy_hide_header Alt-Svc;
         add_header X-Amunet-Probe 1 always;
         add_header Cache-Control "no-store" always;
         access_log off;

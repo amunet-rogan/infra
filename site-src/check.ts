@@ -250,6 +250,19 @@ console.log("── služby");
     check(got["Paperless"] === "up:HTTPS", "HTTPS stranka: Paperless overen", `HTTPS stranka: Paperless ${got["Paperless"]}`);
   }
   info(Object.entries(got).filter(([n]) => !EXPECT[n]).map(([n, v]) => `${n}=${v}`).join("  "));
+  if (!server) {
+    // Nasazena sonda nesmi propustit hlavicky, podle kterych prohlizec jedna
+    // (prihlasovaci okno, preload, HSTS, mazani dat) — odpoved je pod originem stranky.
+    const DENY = ["www-authenticate", "proxy-authenticate", "link", "refresh", "location", "set-cookie",
+                  "strict-transport-security", "clear-site-data", "alt-svc"];
+    const ports = await page.locator(".dot[data-port]").evaluateAll(els => els.map(e => (e as HTMLElement).dataset.port!));
+    const leaks: string[] = [];
+    for (const p of ports) {
+      const r = await page.request.fetch(`${origin}/_probe/${p}/`, { method: "HEAD" });
+      for (const h of DENY) if (r.headers()[h]) leaks.push(`${p}:${h}`);
+    }
+    check(!leaks.length, "sonda nepropousti aktivni hlavicky", `sonda propousti ${leaks.join(", ")}`);
+  }
   const note = await page.locator("#n-http").textContent();
   check(!!note && note.includes("Immich") && !note.includes("Paperless"),
         "poznamka vyjmenuje HTTP-only sluzby", `poznamka: ${note}`);
