@@ -145,6 +145,12 @@ for (const pg of PAGES) {
       l.wide.length && `mimo sirku: ${l.wide.join(", ")}`,
     ].filter(Boolean);
     check(!probs.length, `${vp.name}`, `${vp.name}: ${probs.join("; ")}`);
+    if (vp === VIEWPORTS[0]) {
+      const icon = await page.locator('link[rel="icon"]').getAttribute("href");
+      const ok = !!icon && icon.startsWith("data:image/png;base64,") &&
+        await page.evaluate(async (u) => { const i = new Image(); i.src = u; await i.decode(); return i.naturalWidth === 64; }, icon);
+      check(ok, "favicon (hlava Amunet, 64 px)", "favicon chybi nebo nejde dekodovat");
+    }
     await page.screenshot({ path: join(SHOTS, `${pg.key}-${vp.name}.png`), fullPage: vp.name === "desktop" });
     await ctx.close();
   }
@@ -166,6 +172,17 @@ console.log("── rozcestník");
   await page.waitForTimeout(700);
   const q2 = (await page.locator("#qt").textContent())?.trim() ?? "";
   check(q2 !== q1 && q2.length > 10, "klepnuti vymeni citat", "citat se nezmenil");
+  // * prepina presny / volnejsi preklad a neprechazi na dalsi citat
+  for (let k = 0; k < 20 && !(await page.locator("#qa").isVisible()); k++) { await page.locator("#q").click(); await page.waitForTimeout(520); }
+  const src0 = await page.locator("#qs").textContent();
+  const p0 = (await page.locator("#qt").textContent())?.trim();
+  await page.locator("#qa").click(); await page.waitForTimeout(520);
+  const l0 = (await page.locator("#qt").textContent())?.trim();
+  const same = (await page.locator("#qs").textContent()) === src0;
+  check(!!l0 && l0 !== p0 && same && await page.locator("#qa").getAttribute("aria-pressed") === "true",
+        "* ukaze volnejsi preklad tehoz citatu", `*: ${p0} → ${l0} (stejny zdroj: ${same})`);
+  await page.locator("#qa").click(); await page.waitForTimeout(520);
+  check((await page.locator("#qt").textContent())?.trim() === p0, "druhe * vrati presny preklad", "druhe * nevratilo presny preklad");
   const nQ = await page.evaluate(() => JSON.parse(localStorage.getItem("amunet:quotes:deck") || "{}").n ?? 0);
   check(nQ >= 100, `${nQ} citatu`, `jen ${nQ} citatu`);
   const seen = new Set([q1, q2]);

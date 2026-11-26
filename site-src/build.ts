@@ -31,9 +31,17 @@ const built = new Date().toLocaleString("cs-CZ", {
   timeZone: "Europe/Prague", dateStyle: "medium", timeStyle: "short",
 });
 
+// Favicon: hlava Amunet (assets/, zdroj ~/Projects/Amunet/gfx/Amunet-gemini-1.jpeg),
+// vlozena jako data URI — stranky zustavaji self-contained, nginx se nemeni.
+const dataUri = async (rel: string, mime: string) =>
+  `data:${mime};base64,${Buffer.from(await readFile(join(HERE, rel))).toString("base64")}`;
+const ICONS =
+  `<link rel="icon" type="image/png" sizes="64x64" href="${await dataUri("assets/favicon-64.png", "image/png")}">\n` +
+  `<link rel="apple-touch-icon" href="${await dataUri("assets/apple-touch-180.jpg", "image/jpeg")}">`;
+
 function fill(tpl: string, vars: Record<string, string>) {
   let out = tpl;
-  for (const [k, v] of Object.entries(vars)) out = out.split(`{{${k}}}`).join(v);
+  for (const [k, v] of Object.entries({ ICONS, ...vars })) out = out.split(`{{${k}}}`).join(v);
   const left = out.match(/\{\{[A-Z_]+\}\}/);
   if (left) throw new Error(`Nenahrazeny placeholder ${left[0]}`);
   return out;
@@ -50,7 +58,8 @@ async function emit(rel: string, html: string) {
 await rm(OUT, { recursive: true, force: true });
 
 // --- home ----------------------------------------------------------------
-type Quote = { text: string; source: string };
+// text = preklad blizko originalu (vychozi), loose = volnejsi (prepina se hvezdickou)
+type Quote = { text: string; source: string; loose?: string };
 const quotes: Quote[] = JSON.parse(await read("data/quotes.json"));
 if (!quotes.length) throw new Error("data/quotes.json je prazdny");
 // no-JS vychozi = prvni citat: deterministicky build, zadny sum v diffech (JS si vybere nahodne)
@@ -59,6 +68,7 @@ await emit("index.html", fill(await read("templates/home.html"), {
   BASE_CSS,
   QUOTE_TEXT: esc(first.text),
   QUOTE_SOURCE: esc(first.source),
+  QUOTE_ALT_HIDDEN: first.loose ? "" : " hidden",
   QUOTES_JSON: scriptJson(quotes),
 }));
 

@@ -8,7 +8,9 @@ Zdroj webu na `http://amunet.tail49d1b.ts.net/` (jen v tailnetu).
 | `/sluzby/` | `sluzby/index.html` | `templates/services.html` + `data/services.json` |
 | `/pro-martina/` | `pro-martina/index.html` | `templates/handbook.html` + `content/handbook/*.md` |
 
-Sdílené styly: `base.css` (vkládá se jako `{{BASE_CSS}}`).
+Sdílené styly: `base.css` (vkládá se jako `{{BASE_CSS}}`). Favicon: hlava Amunet z
+`assets/` (výřez z `~/Projects/Amunet/gfx/Amunet-gemini-1.jpeg`, zdroj `amunet-head-256.png`),
+vkládá se do všech stránek jako data URI (`{{ICONS}}`).
 
 ## Běžné úpravy
 
@@ -33,7 +35,9 @@ Sdílené styly: `base.css` (vkládá se jako `{{BASE_CSS}}`).
   Přímé sondy už jen vybírají nejlepší odkaz. Služba s vlastním TLS na backendu:
   `"upstream": "https"`. Nástroje (`/sky_max/*`): 502 = kontejner neběží.
 - **Štítky** — filtr na `/sluzby/` se staví z `categories` (jen použité).
-- **Citáty** — `data/quotes.json`. Jen kanonické texty s odkazem na zdroj;
+- **Citáty** — `data/quotes.json`: `text` = překlad blízko originálu (výchozí, běžné
+  pojmy v originále: nibbána, Dhamma, dukkha, sankháry…), `loose` = volnější překlad,
+  přepíná se hvězdičkou `*` (volba se pamatuje). Bez `loose` se hvězdička skryje. Jen kanonické texty s odkazem na zdroj;
   většina „Buddhových citátů" na internetu je podvržená. Rozcestník je ukazuje
   ze zamíchaného balíčku (localStorage), takže se neopakují, dokud nepadnou všechny.
 - **Příručka** — `content/handbook/NN-nazev.md`, první řádek `# Nadpis`.
