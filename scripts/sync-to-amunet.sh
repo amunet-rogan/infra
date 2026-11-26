@@ -126,7 +126,18 @@ scp -O -q "$REPO_ROOT/amunet/runner/.env.example" \
 # -----------------------------------------------------------------------------
 # Nginx config — needs sudo to install + reload
 # -----------------------------------------------------------------------------
-echo "→ Copying nginx config to Amunet"
+# Sudo (reload nginx) jen kdyz se konfigurace opravdu lisi od nainstalovane.
+# Soubor v conf.d je 644, takze checksum jde porovnat bez sudo.
+LOCAL_SUM="$(shasum -a 256 "$REPO_ROOT/amunet/nginx/http.amunet-rogan.conf" | cut -d' ' -f1)"
+REMOTE_SUM="$(ssh "$AMUNET_HOST" "sha256sum $NGINX_CONF_PATH 2>/dev/null | cut -d' ' -f1" 2>/dev/null || true)"
+if [[ -n $REMOTE_SUM && $LOCAL_SUM == "$REMOTE_SUM" ]]; then
+  echo "→ nginx config unchanged — no reload, no sudo needed"
+  echo ""
+  echo "✓ Sync complete."
+  exit 0
+fi
+
+echo "→ Copying nginx config to Amunet (it differs from the installed one)"
 scp -O -q "$REPO_ROOT/amunet/nginx/http.amunet-rogan.conf" \
        "$AMUNET_HOST:/tmp/http.amunet-rogan.conf"
 
