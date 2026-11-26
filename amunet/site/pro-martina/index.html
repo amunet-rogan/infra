@@ -114,6 +114,18 @@ kbd{font:600 .8em var(--mono);background:var(--card);border:1px solid var(--line
 .task li.done{opacity:.5}
 .task li.done .tt{text-decoration:line-through}
 .tt{flex:1}
+/* --- archivni (hotove) sekce: sbalene na konci --- */
+nav a.arch{opacity:.55}
+section.arch details>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;
+  align-items:baseline;gap:.2rem .8rem;padding:.9rem 1rem;background:var(--card);
+  border:1px solid var(--line);border-radius:11px;-webkit-tap-highlight-color:transparent}
+section.arch details>summary::-webkit-details-marker{display:none}
+section.arch details>summary::before{content:"▸";color:var(--accent);font-size:.9rem}
+section.arch details[open]>summary::before{content:"▾"}
+section.arch details>summary h1{margin:0;font-size:1.15rem;color:var(--dim)}
+section.arch details[open]>summary h1{color:var(--fg)}
+.arch-note{flex-basis:100%;font-size:.85rem;color:var(--dim);padding-left:1.25rem}
+section.arch details[open]>summary{margin-bottom:1rem}
 footer{max-width:820px;margin:0 auto;padding:0 1.1rem 3rem;color:var(--dim);
   font:.76rem/1.6 var(--mono)}
 @media (max-width:600px){
@@ -133,9 +145,9 @@ footer{max-width:820px;margin:0 auto;padding:0 1.1rem 3rem;color:var(--dim);
   </div>
   <nav><a href="#vitej-na-amunetu">Vítej na Amunetu</a>
 <a href="#mapa">Mapa</a>
-<a href="#novy-mac">Nový Mac</a>
 <a href="#workflow">Workflow</a>
-<a href="#reference">Reference</a></nav>
+<a href="#reference">Reference</a>
+<a href="#novy-mac" class="arch">Nový Mac</a></nav>
 </header>
 <main><section id="vitej-na-amunetu">
 <h1>Vítej na Amunetu</h1>
@@ -143,15 +155,15 @@ footer{max-width:820px;margin:0 auto;padding:0 1.1rem 3rem;color:var(--dim);
 <blockquote>
 <p><strong>Když čteš tuhle stránku, Tailscale ti funguje.</strong> Tahle adresa neexistuje na veřejném internetu — jde vidět jen ze zařízení připojených do naší privátní sítě. To je zároveň nejrychlejší test, jestli je připojení v pořádku.</p>
 </blockquote>
-<p>Příručka má čtyři části:</p>
+<p>Příručka má tyhle části:</p>
 <ul>
 <li><strong>Mapa</strong> — co je Amunet, Tailscale, Vaultwarden, amunet-rogan a jak to spolu souvisí.</li>
-<li><strong>Nový Mac</strong> — odškrtávací seznam, co nainstalovat a jak ověřit, že to jede.</li>
 <li><strong>Workflow</strong> — jak vyrobíš a nasadíš nástroj.</li>
 <li><strong>Reference</strong> — adresy, řešení problémů, kdy psát Jendovi.</li>
+<li><strong>Nový Mac</strong> — sbalený na konci. Mac už máš nastavený; seznam zůstává pro další Mac nebo přeinstalaci.</li>
 </ul>
 <p>Přehled všeho, co na Amunetu běží, i s odkazy, je na <a href="../sluzby/">seznamu služeb</a>.</p>
-<p>Nemusíš rozumět všemu. Části <em>Nový Mac</em> a <em>Workflow</em> stačí projít shora dolů.</p>
+<p>Nemusíš rozumět všemu. <em>Workflow</em> stačí projít shora dolů.</p>
 </section>
 <section id="mapa">
 <h1>Mapa</h1>
@@ -239,132 +251,6 @@ footer{max-width:820px;margin:0 auto;padding:0 1.1rem 3rem;color:var(--dim);
 <h2>GitHub CLI (<code>gh</code>)</h2>
 <p>Nástroj v terminálu pro práci s GitHubem. Potřebuješ ho hlavně kvůli přihlášení — jednou se autentizuješ a <code>git push</code> pak funguje bez ptaní na heslo.</p>
 </section>
-<section id="novy-mac">
-<h1>Nový Mac</h1>
-<p>Odškrtávací seznam. Jdi shora dolů, každý krok má ověření. Odškrtnutí se pamatuje v prohlížeči, takže můžeš zavřít a vrátit se.</p>
-<p>Terminál otevřeš přes <kbd>Cmd</kbd>+<kbd>mezerník</kbd> → napiš <code>Terminal</code> → <kbd>Enter</kbd>.</p>
-<h2>1. Tailscale</h2>
-<p>Bez tohohle nefunguje nic dalšího, takže první.</p>
-<ul>
-<li><input disabled="" type="checkbox"> Stáhni z <a href="https://tailscale.com/download/mac">tailscale.com/download/mac</a> (nebo App Store)</li>
-<li><input disabled="" type="checkbox"> Spusť, přihlas se <strong>stejným účtem jako na telefonu</strong></li>
-<li><input disabled="" type="checkbox"> V menu baru klikni na ikonu Tailscale → zkontroluj, že je <em>Connected</em></li>
-<li><input disabled="" type="checkbox"> Jendovi napiš, že máš nové zařízení — musí ho schválit v adminu</li>
-</ul>
-<p>Ověření v terminálu:</p>
-<pre><code class="language-bash">/Applications/Tailscale.app/Contents/MacOS/Tailscale status
-</code></pre>
-<p>Měl bys v seznamu vidět <code>amunet</code>.</p>
-<ul>
-<li><input disabled="" type="checkbox"> Zapni Tailscale DNS (potřeba pro Vaultwarden):</li>
-</ul>
-<pre><code class="language-bash">/Applications/Tailscale.app/Contents/MacOS/Tailscale set --accept-dns=true
-</code></pre>
-<ul>
-<li><input disabled="" type="checkbox"> Otevři v prohlížeči <code>http://amunet.tail49d1b.ts.net/</code> — musí naskočit rozcestník Amunetu (citát a dva odkazy)</li>
-</ul>
-<blockquote>
-<p>Pokud se stránka nenačte, dál nepokračuj. Napiš Jendovi. Všechny další kroky na tomhle stojí.</p>
-</blockquote>
-<h2>2. Homebrew</h2>
-<p>Správce balíčků pro macOS. Skrz něj nainstaluješ zbytek jedním příkazem.</p>
-<ul>
-<li><input disabled="" type="checkbox"> Nainstaluj:</li>
-</ul>
-<pre><code class="language-bash">/bin/bash -c &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&quot;
-</code></pre>
-<p>Instalátor si řekne o heslo k Macu a na konci vypíše dva řádky začínající <code>eval</code>. <strong>Ty dva řádky musíš spustit</strong> — jinak <code>brew</code> nepůjde. Zkopíruj je z výstupu a spusť.</p>
-<ul>
-<li><input disabled="" type="checkbox"> Ověř:</li>
-</ul>
-<pre><code class="language-bash">brew --version
-</code></pre>
-<h2>3. Vývojářské nástroje</h2>
-<ul>
-<li><input disabled="" type="checkbox"> Nainstaluj vše najednou:</li>
-</ul>
-<pre><code class="language-bash">brew install git gh node@24
-brew install --cask visual-studio-code bitwarden
-</code></pre>
-<ul>
-<li><input disabled="" type="checkbox"> Zpřístupni Node 24 v terminálu:</li>
-</ul>
-<pre><code class="language-bash">echo &#39;export PATH=&quot;/opt/homebrew/opt/node@24/bin:$PATH&quot;&#39; &gt;&gt; ~/.zprofile
-source ~/.zprofile
-</code></pre>
-<ul>
-<li><input disabled="" type="checkbox"> Ověř — musí vypsat <code>v24.x.x</code>:</li>
-</ul>
-<pre><code class="language-bash">node --version
-</code></pre>
-<p>Node 24 je verze, na které běží nástroje na Amunetu. Držet se jí znamená, že co funguje u tebe, funguje i tam.</p>
-<h2>4. Přihlášení k GitHubu</h2>
-<ul>
-<li><input disabled="" type="checkbox"> Spusť:</li>
-</ul>
-<pre><code class="language-bash">gh auth login
-</code></pre>
-<p>Odpovědi: <strong>GitHub.com</strong> → <strong>HTTPS</strong> → <strong>Yes</strong> (authenticate Git) → <strong>Login with a web browser</strong>. Zobrazí se kód, zkopíruj ho, prohlížeč se otevře sám.</p>
-<ul>
-<li><input disabled="" type="checkbox"> Ověř:</li>
-</ul>
-<pre><code class="language-bash">gh auth status
-</code></pre>
-<ul>
-<li><input disabled="" type="checkbox"> Nastav si jméno a mail do commitů:</li>
-</ul>
-<pre><code class="language-bash">git config --global user.name &quot;Martin Tresnak&quot;
-git config --global user.email &quot;m.tresnak@gmail.com&quot;
-</code></pre>
-<ul>
-<li><p><input disabled="" type="checkbox"> 
-Zkontroluj, že je <code>m.tresnak@gmail.com</code> přidaný a ověřený na GitHubu:
-<a href="https://github.com/settings/emails">github.com/settings/emails</a>. Jinak se ti commity
-nepřipíšou a na GitHubu budou mít šedého anonyma místo tvého avataru.</p>
-</li>
-<li><p><input disabled="" type="checkbox"> 
-Zkontroluj, že vidíš org — musí vypsat seznam repozitářů:</p>
-</li>
-</ul>
-<pre><code class="language-bash">gh repo list amunet-rogan
-</code></pre>
-<p>Pokud vypíše chybu o oprávnění, nemáš přijatou pozvánku do orgu → <a href="https://github.com/orgs/amunet-rogan/invitation">github.com/orgs/amunet-rogan/invitation</a></p>
-<h2>5. Bitwarden</h2>
-<p>Aplikace už je nainstalovaná z kroku 3. Teď ji nasměruješ na náš server.</p>
-<ul>
-<li><input disabled="" type="checkbox"> Otevři Bitwarden</li>
-<li><input disabled="" type="checkbox"> Na přihlašovací obrazovce klikni na <strong>ozubené kolo</strong> vlevo nahoře</li>
-<li><input disabled="" type="checkbox"> <strong>Server URL</strong> → vlož:</li>
-</ul>
-<pre><code>https://amunet.tail49d1b.ts.net:8280
-</code></pre>
-<ul>
-<li><input disabled="" type="checkbox"> Ulož a přihlas se</li>
-<li><input disabled="" type="checkbox"> Rozšíření do prohlížeče: nainstaluj <em>Bitwarden Password Manager</em> z obchodu a nastav mu <strong>stejnou</strong> Server URL</li>
-</ul>
-<blockquote>
-<p>Kdyby se stránka trezoru jen točila a nenačetla — skoro vždy je to <code>accept-dns</code>. Spusť příkaz z kroku 1 a zkus znovu.</p>
-</blockquote>
-<h2>6. Claude Code</h2>
-<ul>
-<li><input disabled="" type="checkbox"> Nainstaluj:</li>
-</ul>
-<pre><code class="language-bash">npm install -g @anthropic-ai/claude-code
-</code></pre>
-<ul>
-<li><input disabled="" type="checkbox"> Spusť a přihlas se (otevře prohlížeč):</li>
-</ul>
-<pre><code class="language-bash">claude
-</code></pre>
-<p>Claude Code je asistent v terminálu — pracuje se soubory ve složce, ve které ho spustíš. Tímhle budeš psát většinu kódu nástrojů.</p>
-<h2>7. Hotovo — zkušební jízda</h2>
-<ul>
-<li><input disabled="" type="checkbox"> Ověř, že vidíš běžící nástroj:</li>
-</ul>
-<pre><code>http://amunet.tail49d1b.ts.net/sky_max/losovani-soutezi/
-</code></pre>
-<p>Pokud se načte, máš kompletní řetěz: Tailscale → Amunet → nginx → kontejner. Můžeš jít na <em>Workflow</em>.</p>
-</section>
 <section id="workflow">
 <h1>Workflow</h1>
 <p>Jak vyrobíš a nasadíš nástroj. Po prvním průchodu to zabere pár minut.</p>
@@ -386,7 +272,7 @@ Zkontroluj, že vidíš org — musí vypsat seznam repozitářů:</p>
 <td><code>IG Stats</code>, <code>můj_nástroj!</code>, <code>Instagram Stats</code></td>
 </tr>
 </tbody></table>
-<p><strong>2. Napiš Jendovi název.</strong> Musí nástroj zaregistrovat — přidělí mu port a vygeneruje nginx konfiguraci. Trvá to půl minuty, ale bez toho tvoje URL nebude existovat.</p>
+<p><strong>2. Napiš Jendovi název a jednou větou, co nástroj dělá.</strong> Jenda nástroj zaregistruje jedním příkazem — přidělí mu port, nastaví adresu a přidá ho na <a href="../sluzby/">seznam služeb</a> s tvým popisem. Bez toho tvoje URL nebude existovat a první nasazení skončí chybou <em>not onboarded</em>.</p>
 <p><strong>3. Až potvrdí,</strong> jdi na <a href="https://github.com/amunet-rogan/tool-template">tool-template</a> → <strong>Use this template</strong> → <strong>Create a new repository</strong>:</p>
 <ul>
 <li>Owner: <code>amunet-rogan</code></li>
@@ -547,8 +433,136 @@ git commit --allow-empty -m &quot;redeploy&quot; &amp;&amp; git push
 <li>Myslíš, že potřebuješ upravit <code>Dockerfile</code> nebo <code>deploy.yml</code></li>
 </ul>
 <p>Chyba v tvém kódu, styling, logika nástroje, přidání knihovny — to všechno zvládne Claude Code.</p>
+</section>
+<section id="novy-mac" class="arch">
+<details>
+<summary><h1>Nový Mac</h1><span class="arch-note">Hotovo — Mac je nastavený. Nechávám to tu pro další Mac nebo přeinstalaci.</span></summary>
+<p>Odškrtávací seznam. Jdi shora dolů, každý krok má ověření. Odškrtnutí se pamatuje v prohlížeči, takže můžeš zavřít a vrátit se.</p>
+<p>Terminál otevřeš přes <kbd>Cmd</kbd>+<kbd>mezerník</kbd> → napiš <code>Terminal</code> → <kbd>Enter</kbd>.</p>
+<h2>1. Tailscale</h2>
+<p>Bez tohohle nefunguje nic dalšího, takže první.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Stáhni z <a href="https://tailscale.com/download/mac">tailscale.com/download/mac</a> (nebo App Store)</li>
+<li><input disabled="" type="checkbox"> Spusť, přihlas se <strong>stejným účtem jako na telefonu</strong></li>
+<li><input disabled="" type="checkbox"> V menu baru klikni na ikonu Tailscale → zkontroluj, že je <em>Connected</em></li>
+<li><input disabled="" type="checkbox"> Jendovi napiš, že máš nové zařízení — musí ho schválit v adminu</li>
+</ul>
+<p>Ověření v terminálu:</p>
+<pre><code class="language-bash">/Applications/Tailscale.app/Contents/MacOS/Tailscale status
+</code></pre>
+<p>Měl bys v seznamu vidět <code>amunet</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Zapni Tailscale DNS (potřeba pro Vaultwarden):</li>
+</ul>
+<pre><code class="language-bash">/Applications/Tailscale.app/Contents/MacOS/Tailscale set --accept-dns=true
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Otevři v prohlížeči <code>http://amunet.tail49d1b.ts.net/</code> — musí naskočit rozcestník Amunetu (citát a dva odkazy)</li>
+</ul>
+<blockquote>
+<p>Pokud se stránka nenačte, dál nepokračuj. Napiš Jendovi. Všechny další kroky na tomhle stojí.</p>
+</blockquote>
+<h2>2. Homebrew</h2>
+<p>Správce balíčků pro macOS. Skrz něj nainstaluješ zbytek jedním příkazem.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Nainstaluj:</li>
+</ul>
+<pre><code class="language-bash">/bin/bash -c &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&quot;
+</code></pre>
+<p>Instalátor si řekne o heslo k Macu a na konci vypíše dva řádky začínající <code>eval</code>. <strong>Ty dva řádky musíš spustit</strong> — jinak <code>brew</code> nepůjde. Zkopíruj je z výstupu a spusť.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Ověř:</li>
+</ul>
+<pre><code class="language-bash">brew --version
+</code></pre>
+<h2>3. Vývojářské nástroje</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Nainstaluj vše najednou:</li>
+</ul>
+<pre><code class="language-bash">brew install git gh node@24
+brew install --cask visual-studio-code bitwarden
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Zpřístupni Node 24 v terminálu:</li>
+</ul>
+<pre><code class="language-bash">echo &#39;export PATH=&quot;/opt/homebrew/opt/node@24/bin:$PATH&quot;&#39; &gt;&gt; ~/.zprofile
+source ~/.zprofile
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Ověř — musí vypsat <code>v24.x.x</code>:</li>
+</ul>
+<pre><code class="language-bash">node --version
+</code></pre>
+<p>Node 24 je verze, na které běží nástroje na Amunetu. Držet se jí znamená, že co funguje u tebe, funguje i tam.</p>
+<h2>4. Přihlášení k GitHubu</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Spusť:</li>
+</ul>
+<pre><code class="language-bash">gh auth login
+</code></pre>
+<p>Odpovědi: <strong>GitHub.com</strong> → <strong>HTTPS</strong> → <strong>Yes</strong> (authenticate Git) → <strong>Login with a web browser</strong>. Zobrazí se kód, zkopíruj ho, prohlížeč se otevře sám.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Ověř:</li>
+</ul>
+<pre><code class="language-bash">gh auth status
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Nastav si jméno a mail do commitů:</li>
+</ul>
+<pre><code class="language-bash">git config --global user.name &quot;Martin Tresnak&quot;
+git config --global user.email &quot;m.tresnak@gmail.com&quot;
+</code></pre>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+Zkontroluj, že je <code>m.tresnak@gmail.com</code> přidaný a ověřený na GitHubu:
+<a href="https://github.com/settings/emails">github.com/settings/emails</a>. Jinak se ti commity
+nepřipíšou a na GitHubu budou mít šedého anonyma místo tvého avataru.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+Zkontroluj, že vidíš org — musí vypsat seznam repozitářů:</p>
+</li>
+</ul>
+<pre><code class="language-bash">gh repo list amunet-rogan
+</code></pre>
+<p>Pokud vypíše chybu o oprávnění, nemáš přijatou pozvánku do orgu → <a href="https://github.com/orgs/amunet-rogan/invitation">github.com/orgs/amunet-rogan/invitation</a></p>
+<h2>5. Bitwarden</h2>
+<p>Aplikace už je nainstalovaná z kroku 3. Teď ji nasměruješ na náš server.</p>
+<ul>
+<li><input disabled="" type="checkbox"> Otevři Bitwarden</li>
+<li><input disabled="" type="checkbox"> Na přihlašovací obrazovce klikni na <strong>ozubené kolo</strong> vlevo nahoře</li>
+<li><input disabled="" type="checkbox"> <strong>Server URL</strong> → vlož:</li>
+</ul>
+<pre><code>https://amunet.tail49d1b.ts.net:8280
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Ulož a přihlas se</li>
+<li><input disabled="" type="checkbox"> Rozšíření do prohlížeče: nainstaluj <em>Bitwarden Password Manager</em> z obchodu a nastav mu <strong>stejnou</strong> Server URL</li>
+</ul>
+<blockquote>
+<p>Kdyby se stránka trezoru jen točila a nenačetla — skoro vždy je to <code>accept-dns</code>. Spusť příkaz z kroku 1 a zkus znovu.</p>
+</blockquote>
+<h2>6. Claude Code</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Nainstaluj:</li>
+</ul>
+<pre><code class="language-bash">npm install -g @anthropic-ai/claude-code
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> Spusť a přihlas se (otevře prohlížeč):</li>
+</ul>
+<pre><code class="language-bash">claude
+</code></pre>
+<p>Claude Code je asistent v terminálu — pracuje se soubory ve složce, ve které ho spustíš. Tímhle budeš psát většinu kódu nástrojů.</p>
+<h2>7. Hotovo — zkušební jízda</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Ověř, že vidíš běžící nástroj:</li>
+</ul>
+<pre><code>http://amunet.tail49d1b.ts.net/sky_max/losovani-soutezi/
+</code></pre>
+<p>Pokud se načte, máš kompletní řetěz: Tailscale → Amunet → nginx → kontejner. Můžeš jít na <em>Workflow</em>.</p>
+</details>
 </section></main>
-<footer>amunet-rogan/infra · sestaveno 26. 11. 2026 10:08</footer>
+<footer>amunet-rogan/infra · sestaveno 26. 11. 2026 11:53</footer>
 <script>
 (function(){
   // GFM task-listy -> perzistentni odskrtavaci ukoly.
@@ -609,6 +623,15 @@ git commit --allow-empty -m &quot;redeploy&quot; &amp;&amp; git push
     });
     pre.appendChild(b);
   });
+
+  // Odkaz na sbalenou (archivni) sekci ji rozbali
+  function openTarget(){
+    var el = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    var d = el && el.querySelector('details');
+    if(d && !d.open){ d.open = true; el.scrollIntoView(); }
+  }
+  window.addEventListener('hashchange', openTarget);
+  openTarget();
 
   // Zvyrazneni aktivni sekce v navigaci
   var links = [].slice.call(document.querySelectorAll('nav a'));

@@ -29,11 +29,11 @@
     {"rank":8,"name":"Obsidian LiveSync","cat":"sync","port":5984,"path":"/_utils/","tls":true,"desc":"CouchDB za synchronizací poznámek v Obsidianu. Administrace databáze."},
     {"rank":9,"name":"Karakeep","cat":"rodina","port":3001,"desc":"Záložky a články na později, s fulltextem."},
     {"rank":10,"name":"Forgejo","cat":"vyvoj","port":3000,"desc":"Vlastní Git server."},
-    {"rank":11,"name":"Portainer","cat":"sprava","port":9443,"tls":true,"only":"https","probe":false,"desc":"Správa Docker kontejnerů. Prohlížeč upozorní na certifikát — to je v pořádku."},
+    {"rank":11,"name":"Portainer","cat":"sprava","port":9443,"upstream":"https","tls":true,"only":"https","probe":false,"desc":"Správa Docker kontejnerů. Prohlížeč upozorní na certifikát — to je v pořádku."},
     {"rank":12,"name":"Anubis 2","cat":"vyvoj","port":8089,"tls":true,"desc":"Jendův agent a přehled projektů."},
-    {"rank":13,"name":"Losování soutěží","cat":"nastroj","url":"/sky_max/losovani-soutezi/","desc":"sky_max/losovani-soutezi","group":"amunet-rogan"},
-    {"rank":14,"name":"Carousel generator","cat":"nastroj","url":"/sky_max/carousel-generator/","desc":"sky_max/carousel-generator","group":"amunet-rogan"},
-    {"rank":15,"name":"Some report","cat":"nastroj","url":"/sky_max/some-report/","desc":"sky_max/some-report","group":"amunet-rogan"},
+    {"rank":13,"name":"Losování soutěží","cat":"nastroj","url":"/sky_max/losovani-soutezi/","desc":"Soutěže ábíčka na Instagramu a Facebooku: zadání přijme e-mailem, po skončení vylosuje výherce z komentářů, výsledek uloží do Excelu a ohlásí na Telegramu.","group":"amunet-rogan"},
+    {"rank":14,"name":"Carousel generator","cat":"nastroj","url":"/sky_max/carousel-generator/","desc":"Instagramové carousely 1080 × 1080 z článků ábíčka: Claude napíše texty slidů, ty přiřadíš fotky a stáhneš PNG.","group":"amunet-rogan"},
+    {"rank":15,"name":"SoMe report","cat":"nastroj","url":"/sky_max/some-report/","desc":"Měsíční SoMe reporting redakcí CNC z Meta Insights — Instagram a Facebook zvlášť, s vlastní časovou řadou.","group":"amunet-rogan"},
     {"rank":16,"name":"Virtuální Česko","cat":"nastroj","url":"/sky_max/virtualni-cesko/","desc":"Nový nástroj — popis doplníme.","group":"amunet-rogan"}
   ]
 }

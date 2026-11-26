@@ -3,23 +3,29 @@
 Infrastruktura pro nástroje uživatelů (`sky_max`, …) na Amunetu a web
 `http://amunet.tail49d1b.ts.net/` (rozcestník, `/sluzby/`, `/pro-martina/`).
 
-## Onboarding nového nástroje
+## Nástroje: onboarding a popis
+
+Jeden příkaz, běží jen na čistém `main`, stageuje explicitní cesty:
 
 ```bash
-./scripts/onboard-tool.sh <user> <tool>
+./scripts/tool.sh new sky_max/<tool> --name "…" --desc "…"   # port, config.env, nginx, web → commit → push → sync
+./scripts/tool.sh describe sky_max/<tool> --desc "…"         # jen název/popis na /sluzby/ → commit → push → sync webu
+./scripts/tool.sh list
+./scripts/tool.sh                                            # interaktivně
 ```
 
-Skript přidělí port, zapíše `amunet/tools/<user>/<tool>/config.env`, přegeneruje
-nginx conf, **přidá nástroj do `site-src/data/services.json` a přebuilduje web**.
-Potom vždy:
+`new` končí `sync-to-amunet.sh`, který chce sudo heslo na Amunetu → **spouští
+uživatel**, ne agent. Agent může připravit commit: `--no-sync` (commit + push)
+nebo `--no-push` (jen lokálně). `describe` synchronizuje jen web
+(`sync-to-amunet.sh --site-only`, bez sudo).
 
-1. V `site-src/data/services.json` nahraď odhadnutý `name` a `desc` skutečnými
-   (zeptej se, co nástroj dělá) a spusť `cd site-src && bun run build`.
-2. Commitni **i** `amunet/site/` a `site-src/data/services.json`, ne jen `amunet/tools`.
-3. `./scripts/sync-to-amunet.sh` (potřebuje sudo heslo na Amunetu → spouští uživatel).
+Pod kapotou: `onboard-tool.sh` (port, config.env, nginx) a `site-src/add-service.ts`
+(záznam v `services.json`). `bun run build` varuje (`⚠`), když se `amunet/tools`
+a `services.json` rozejdou — `tool.sh` pak nekomitne. Offboarding: smaž `config.env`
+i záznam v `services.json`.
 
-`bun run build` varuje (`⚠`), když se `amunet/tools` a `services.json` rozejdou —
-varování neignoruj. Offboarding: smaž `config.env` i záznam v `services.json`.
+Neupravuj skripty v checkoutu, ze kterého uživatel zrovna spouští sync — bash čte
+skript z disku průběžně. Pracuj ve worktree.
 
 ## Web
 

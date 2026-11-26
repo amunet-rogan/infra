@@ -57,7 +57,7 @@ footer{padding:0 1.25rem calc(env(safe-area-inset-bottom) + 1.4rem);text-align:c
       <span>Seznam služeb<small>Co na Amunetu běží a kde</small></span>
     </a>
     <a href="pro-martina/">
-      <span>Příručka pro Martina<small>Nový Mac, Tailscale, nasazení nástrojů</small></span>
+      <span>Příručka pro Martina<small>Jak vyrobit a nasadit nástroj, reference</small></span>
     </a>
   </nav>
 </main>
@@ -67,6 +67,28 @@ footer{padding:0 1.25rem calc(env(safe-area-inset-bottom) + 1.4rem);text-align:c
   var Q = {{QUOTES_JSON}};
   var fig = document.getElementById('q'), t = document.getElementById('qt'), s = document.getElementById('qs');
   var cur = -1;
+  // Zamichany balicek: kazdy citat jednou, nez se zacne opakovat. Balicek se
+  // pamatuje v prohlizeci, takze kazda navsteva pokracuje dalsim citatem.
+  var DKEY = 'amunet:quotes:deck';
+  function load(){
+    try{
+      var d = JSON.parse(localStorage.getItem(DKEY) || 'null');
+      if(d && d.n === Q.length && d.left && d.left.length) return d.left;
+    }catch(e){}
+    return null;
+  }
+  function save(left){ try{ localStorage.setItem(DKEY, JSON.stringify({n: Q.length, left: left})); }catch(e){} }
+  var deck = load();
+  function draw(){
+    if(!deck || !deck.length){
+      deck = Q.map(function(_, i){ return i; });
+      for(var k = deck.length - 1; k > 0; k--){ var j = Math.floor(Math.random() * (k + 1)); var t0 = deck[k]; deck[k] = deck[j]; deck[j] = t0; }
+      if(deck.length > 1 && deck[deck.length - 1] === cur){ var t1 = deck[0]; deck[0] = deck[deck.length - 1]; deck[deck.length - 1] = t1; }
+    }
+    var i = deck.pop();
+    save(deck);
+    return i;
+  }
   function show(i, animate){
     cur = i;
     var apply = function(){ t.textContent = Q[i].text; s.textContent = Q[i].source; fig.classList.remove('fading'); };
@@ -76,10 +98,9 @@ footer{padding:0 1.25rem calc(env(safe-area-inset-bottom) + 1.4rem);text-align:c
   }
   function next(){
     if(Q.length < 2) return;
-    var i; do { i = Math.floor(Math.random() * Q.length); } while(i === cur);
-    show(i, true);
+    show(draw(), true);
   }
-  show(Math.floor(Math.random() * Q.length), false);
+  show(draw(), false);
   fig.addEventListener('click', next);
 })();
 </script>

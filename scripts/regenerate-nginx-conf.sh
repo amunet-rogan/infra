@@ -7,6 +7,21 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TOOLS_DIR="$REPO_ROOT/amunet/tools"
 TEMPLATE="$REPO_ROOT/templates/nginx-location.template"
 OUTPUT="$REPO_ROOT/amunet/nginx/http.amunet-rogan.conf"
+SERVICES="$REPO_ROOT/site-src/data/services.json"
+
+# Porty sluzeb ze services.json pro sondu /_probe/<port>/ (viz nize).
+# "http" = backend na holem http, "https" = vlastni TLS (Portainer).
+probe_ports() {  # probe_ports http|https
+    python3 - "$SERVICES" "$1" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+want = sys.argv[2]
+ports = sorted({s["port"] for s in d["services"] if "port" in s and s.get("upstream", "http") == want})
+print("|".join(str(p) for p in ports))
+PY
+}
+PROBE_HTTP="$(probe_ports http)"
+PROBE_HTTPS="$(probe_ports https)"
 
 mkdir -p "$(dirname "$OUTPUT")"
 
@@ -53,6 +68,32 @@ server {
     }
 
 HEADER
+
+    # Sonda dostupnosti pro /sluzby/. Stejny origin jako stranka, takze funguje
+    # i kdyz je stranka otevrena pres HTTPS (prime http:// sondy by prohlizec
+    # zablokoval jako mixed content). Jen HEAD, jen porty ze services.json,
+    # klient dostane jen status: 502/504 = nebezi, cokoliv jineho = bezi.
+    probe_block() {  # probe_block <regex of ports> <scheme> [extra directive]
+        [[ -n $1 ]] || return 0
+        cat <<PROBE
+    location ~ ^/_probe/($1)/\$ {
+        if (\$request_method != HEAD) { return 405; }
+        proxy_pass $2://127.0.0.1:\$1/;${3:-}
+        proxy_pass_request_headers off;
+        proxy_pass_request_body off;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 4s;
+        proxy_hide_header Location;
+        proxy_hide_header Set-Cookie;
+        add_header X-Amunet-Probe 1 always;
+        add_header Cache-Control "no-store" always;
+        access_log off;
+    }
+
+PROBE
+    }
+    probe_block "$PROBE_HTTP" http
+    probe_block "$PROBE_HTTPS" https $'\n        proxy_ssl_verify off;'
 
     if [[ -d "$TOOLS_DIR" ]]; then
         while IFS= read -r config; do

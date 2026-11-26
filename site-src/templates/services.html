@@ -86,6 +86,16 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
   .hwrap{padding:.6rem .95rem} main{padding:1.1rem .95rem 3.5rem}
 }
 @media (prefers-reduced-motion:reduce){.dot[data-state=checking]{animation:none}}
+/* --- filtr podle stitku --- */
+.chips{display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  margin:1.1rem 0 .4rem;padding-bottom:.2rem}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:0 0 auto;font:600 .72rem/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;
+  color:var(--dim);background:transparent;border:1px solid var(--line);border-radius:99px;
+  padding:.5rem .8rem;cursor:pointer;min-height:34px;-webkit-tap-highlight-color:transparent}
+.chips button:hover{color:var(--fg)}
+.chips button[aria-pressed="true"]{color:var(--accent);background:var(--accent-soft);border-color:var(--accent)}
+#list [hidden]{display:none}
 </style>
 </head>
 <body data-host="{{HOST}}">
@@ -116,6 +126,9 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
   <h1>Seznam služeb</h1>
   <p class="lede">Vše kromě DSM je dostupné jen přes Tailscale. Stránka u každé služby
     sama zjistí, jestli jede přes HTTPS, nebo zatím jen přes HTTP.</p>
+  <div class="chips" role="group" aria-label="Filtr podle štítku">
+    {{CHIPS}}
+  </div>
   <ul id="list">
 {{SERVICES}}
   </ul>
@@ -161,9 +174,31 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
     btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.sort === mode)); });
     try{ localStorage.setItem(KEY, mode); }catch(e){}
   }
-  btns.forEach(function(b){ b.addEventListener('click', function(){ sortBy(b.dataset.sort); }); });
+  btns.forEach(function(b){ b.addEventListener('click', function(){ sortBy(b.dataset.sort); applyFilter(); }); });
+
+  // Filtr podle stitku. Klepnuti na aktivni stitek filtr zrusi.
+  var chips = [].slice.call(document.querySelectorAll('.chips button'));
+  var FKEY = 'amunet:services:cat';
+  var cat = '';
+  try{ cat = localStorage.getItem(FKEY) || ''; }catch(e){}
+  if(!chips.some(function(c){ return c.dataset.cat === cat; })) cat = '';
+  function applyFilter(){
+    items.forEach(function(li){ li.hidden = !!cat && li.dataset.cat !== cat; });
+    var head = null, any = false;
+    [].slice.call(list.children).forEach(function(el){
+      if(el.classList.contains('grp')){ if(head) head.hidden = !any; head = el; any = false; }
+      else if(!el.hidden) any = true;
+    });
+    if(head) head.hidden = !any;
+    chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c.dataset.cat === cat)); });
+    try{ localStorage.setItem(FKEY, cat); }catch(e){}
+  }
+  chips.forEach(function(c){ c.addEventListener('click', function(){
+    cat = (c.dataset.cat === cat) ? '' : c.dataset.cat; applyFilter();
+  }); });
   var saved = null; try{ saved = localStorage.getItem(KEY); }catch(e){}
   sortBy(saved === 'name' ? 'name' : 'group');
+  applyFilter();
 
   // Dostupnost a cesta. Kazda sluzba nese kandidatni cesty v poradi
   // https(jmeno) -> http(jmeno) -> http(tailnet IP) -> http(LAN). Vsechny se
@@ -200,8 +235,52 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
     }
   }
 
+  // Stav (tecka) urcuje Amunet sam: /_probe/<port>/ je stejny origin jako
+  // stranka, takze funguje i z HTTPS (prime http:// sondy by prohlizec
+  // zablokoval jako mixed content) a i pro Vaultwarden/Portainer.
+  // Prime sondy nize uz hlavne vybiraji nejlepsi odkaz.
+  function head(url, redirect){
+    return new Promise(function(res){
+      var ctl = ('AbortController' in window) ? new AbortController() : null;
+      var t = setTimeout(function(){ ctl && ctl.abort(); res(null); }, 6000);
+      fetch(url, {method:'HEAD', cache:'no-store', redirect: redirect, signal: ctl && ctl.signal})
+        .then(function(r){ clearTimeout(t); res(r); }, function(){ clearTimeout(t); res(null); });
+    });
+  }
+  function serverState(dot){
+    if(dot.dataset.port){
+      return head('/_probe/' + dot.dataset.port + '/', 'follow').then(function(r){
+        if(!r || r.headers.get('X-Amunet-Probe') !== '1') return null;  // sonda neni nasazena
+        return [502, 503, 504].indexOf(r.status) < 0;
+      });
+    }
+    var all = JSON.parse(dot.dataset.routes);
+    if(all.length === 1 && all[0].url.charAt(0) === '/'){
+      // nastroj pod stejnym originem: 502 = kontejner nebezi. Jinak bezi — i 404
+      // (nektere nastroje na HEAD odpovidaji 404, odpovida ale aplikace sama).
+      return head(all[0].url, 'manual').then(function(r){
+        if(!r) return null;
+        if(r.type === 'opaqueredirect') return true;
+        return [502, 503, 504].indexOf(r.status) < 0;
+      });
+    }
+    return Promise.resolve(null);
+  }
+
   var jobs = items.map(function(li){
     var dot = li.querySelector('.dot');
+    var direct = directJob(li, dot);
+    return Promise.all([direct, serverState(dot)]).then(function(x){
+      var up = x[1];
+      if(up === null) return;
+      if(li.dataset.blind){ stats.blind--; delete li.dataset.blind; }
+      dot.dataset.state = up ? 'up' : 'down';
+      var a = li.querySelector('a');
+      dot.title = (up ? 'odpovídá' : 'neodpovídá') + ' (ověřeno přes Amunet) · ' + a.href;
+    });
+  });
+
+  function directJob(li, dot){
     if(dot.dataset.probe === '0') return Promise.resolve();
     var all = JSON.parse(dot.dataset.routes);
     var routes = all.filter(function(r){
@@ -213,7 +292,7 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
       // na DNS ani na HSTS, ktere umi prepsat http://jmeno na https.
       var ip = all.filter(function(r){ return r.kind === 'ip'; })[0];
       if(ip){ apply(li, ip); stats.http.push(li.dataset.name); }
-      stats.blind++;
+      stats.blind++; li.dataset.blind = '1';
       return Promise.resolve();
     }
     dot.dataset.state = 'checking';
@@ -225,7 +304,7 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
         // content zkusit nesmeli -> nevime. Odkaz na tailnet IP, stav neutralni.
         var ip = hidden && all.filter(function(r){ return r.kind === 'ip'; })[0];
         if(ip){ apply(li, ip); delete dot.dataset.state; dot.title = 'neověřeno (HTTPS stránka)';
-                stats.http.push(li.dataset.name); stats.blind++; return; }
+                stats.http.push(li.dataset.name); stats.blind++; li.dataset.blind = '1'; return; }
         dot.dataset.state = 'down'; dot.title = 'neodpovídá'; return;
       }
       return ps[i].then(function(ok){
@@ -238,7 +317,7 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
       });
     }
     return step();
-  });
+  }
 
   // Proc selhalo http://jmeno, kdyz IP funguje? Bud se jmeno neprelozi (DNS),
   // nebo se prelozi, ale prohlizec http na nem prepisuje na https (HSTS).
@@ -264,7 +343,7 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
     if(cause === 'dns') show('sec-dns', 'n-dns',
       'Jméno ' + HOST + ' se v tomhle zařízení nepřekládá, odkazy proto vedou přes IP. ' +
       'Zapni Tailscale DNS: Tailscale set --accept-dns=true.');
-    if(stats.blind) show('sec-https', 'n-https',
+    if(stats.blind > 0) show('sec-https', 'n-https',
       'Služby na holém HTTP nejde z HTTPS stránky ověřit; odkazy na ně vedou přes IP. ' +
       'Pro plnou kontrolu otevři http://' + HOST + '/sluzby/');
     if(stats.http.length){

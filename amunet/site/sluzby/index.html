@@ -107,6 +107,16 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
   .hwrap{padding:.6rem .95rem} main{padding:1.1rem .95rem 3.5rem}
 }
 @media (prefers-reduced-motion:reduce){.dot[data-state=checking]{animation:none}}
+/* --- filtr podle stitku --- */
+.chips{display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  margin:1.1rem 0 .4rem;padding-bottom:.2rem}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:0 0 auto;font:600 .72rem/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;
+  color:var(--dim);background:transparent;border:1px solid var(--line);border-radius:99px;
+  padding:.5rem .8rem;cursor:pointer;min-height:34px;-webkit-tap-highlight-color:transparent}
+.chips button:hover{color:var(--fg)}
+.chips button[aria-pressed="true"]{color:var(--accent);background:var(--accent-soft);border-color:var(--accent)}
+#list [hidden]{display:none}
 </style>
 </head>
 <body data-host="amunet.tail49d1b.ts.net">
@@ -137,40 +147,48 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
   <h1>Seznam služeb</h1>
   <p class="lede">Vše kromě DSM je dostupné jen přes Tailscale. Stránka u každé služby
     sama zjistí, jestli jede přes HTTPS, nebo zatím jen přes HTTP.</p>
+  <div class="chips" role="group" aria-label="Filtr podle štítku">
+    <button type="button" data-cat="" aria-pressed="true">Vše</button>
+    <button type="button" data-cat="rodina" aria-pressed="false">Pro rodinu</button>
+    <button type="button" data-cat="sync" aria-pressed="false">Synchronizace</button>
+    <button type="button" data-cat="sprava" aria-pressed="false">Správa</button>
+    <button type="button" data-cat="vyvoj" aria-pressed="false">Vývoj</button>
+    <button type="button" data-cat="nastroj" aria-pressed="false">Martinovy nástroje</button>
+  </div>
   <ul id="list">
-    <li class="svc" data-rank="1" data-name="Immich" data-group="amunet">
+    <li class="svc" data-rank="1" data-name="Immich" data-cat="rodina" data-group="amunet">
       <a href="http://amunet.tail49d1b.ts.net:2283/">
-        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:2283/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:2283/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:2283/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:2283/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="dot" data-probe="1" data-port="2283" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:2283/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:2283/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:2283/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:2283/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
         <span class="body"><b>Immich</b><span class="desc">Fotky a videa. Zálohy z telefonů, sdílená alba.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:2283</code><span class="via" data-kind="http">HTTP</span></span></span>
         <span class="cat">Pro rodinu</span>
       </a>
     </li>
-    <li class="svc" data-rank="2" data-name="Vaultwarden" data-group="amunet">
+    <li class="svc" data-rank="2" data-name="Vaultwarden" data-cat="rodina" data-group="amunet">
       <a href="https://amunet.tail49d1b.ts.net:8280/">
-        <span class="dot" data-probe="0" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8280/&quot;,&quot;kind&quot;:&quot;tls&quot;}]"></span>
+        <span class="dot" data-probe="0" data-port="8280" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8280/&quot;,&quot;kind&quot;:&quot;tls&quot;}]"></span>
         <span class="body"><b>Vaultwarden</b><span class="desc">Trezor hesel. V aplikaci Bitwarden nastav tuhle adresu jako server.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:8280</code><span class="via" data-kind="https">HTTPS</span></span></span>
         <span class="cat">Pro rodinu</span>
       </a>
     </li>
-    <li class="svc" data-rank="3" data-name="AdGuard Home" data-group="amunet">
+    <li class="svc" data-rank="3" data-name="AdGuard Home" data-cat="sprava" data-group="amunet">
       <a href="http://amunet.tail49d1b.ts.net:3080/">
-        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:3080/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:3080/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:3080/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:3080/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="dot" data-probe="1" data-port="3080" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:3080/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:3080/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:3080/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:3080/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
         <span class="body"><b>AdGuard Home</b><span class="desc">DNS celé sítě a blokování reklam. Když něco nejde přeložit, začni tady.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:3080</code><span class="via" data-kind="http">HTTP</span></span></span>
         <span class="cat">Správa</span>
       </a>
     </li>
-    <li class="svc" data-rank="4" data-name="Paperless" data-group="amunet">
+    <li class="svc" data-rank="4" data-name="Paperless" data-cat="rodina" data-group="amunet">
       <a href="https://amunet.tail49d1b.ts.net:8300/">
-        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8300/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8300/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="dot" data-probe="1" data-port="8300" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8300/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8300/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
         <span class="body"><b>Paperless</b><span class="desc">Dokumenty — skeny, smlouvy, faktury. Každý má vlastní prostor.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:8300</code><span class="via" data-kind="https">HTTPS</span></span></span>
         <span class="cat">Pro rodinu</span>
       </a>
     </li>
-    <li class="svc" data-rank="5" data-name="DSM" data-group="amunet">
+    <li class="svc" data-rank="5" data-name="DSM" data-cat="sprava" data-group="amunet">
       <a href="https://amunet.synology.me:9091/">
         <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.synology.me:9091/&quot;,&quot;kind&quot;:&quot;fixed&quot;}]"></span>
         <span class="body"><b>DSM</b><span class="desc">Synology administrace. Veřejná adresa — funguje i bez Tailscale.</span>
@@ -178,87 +196,87 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
         <span class="cat">Správa</span>
       </a>
     </li>
-    <li class="svc" data-rank="6" data-name="Syncthing — jenda" data-group="amunet">
+    <li class="svc" data-rank="6" data-name="Syncthing — jenda" data-cat="sync" data-group="amunet">
       <a href="http://amunet.tail49d1b.ts.net:8384/">
-        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8384/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:8384/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:8384/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8384/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="dot" data-probe="1" data-port="8384" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8384/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:8384/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:8384/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8384/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
         <span class="body"><b>Syncthing — jenda</b><span class="desc">Synchronizace složek mezi zařízeními.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:8384</code><span class="via" data-kind="http">HTTP</span></span></span>
         <span class="cat">Synchronizace</span>
       </a>
     </li>
-    <li class="svc" data-rank="7" data-name="Syncthing — arunacala" data-group="amunet">
+    <li class="svc" data-rank="7" data-name="Syncthing — arunacala" data-cat="sync" data-group="amunet">
       <a href="http://amunet.tail49d1b.ts.net:8385/">
-        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8385/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:8385/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:8385/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8385/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="dot" data-probe="1" data-port="8385" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8385/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:8385/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:8385/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8385/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
         <span class="body"><b>Syncthing — arunacala</b><span class="desc">Synchronizace složek, instance pro tátu.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:8385</code><span class="via" data-kind="http">HTTP</span></span></span>
         <span class="cat">Synchronizace</span>
       </a>
     </li>
-    <li class="svc" data-rank="8" data-name="Obsidian LiveSync" data-group="amunet">
+    <li class="svc" data-rank="8" data-name="Obsidian LiveSync" data-cat="sync" data-group="amunet">
       <a href="https://amunet.tail49d1b.ts.net:5984/_utils/">
-        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:5984/_utils/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:5984/_utils/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="dot" data-probe="1" data-port="5984" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:5984/_utils/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:5984/_utils/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
         <span class="body"><b>Obsidian LiveSync</b><span class="desc">CouchDB za synchronizací poznámek v Obsidianu. Administrace databáze.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:5984/_utils/</code><span class="via" data-kind="https">HTTPS</span></span></span>
         <span class="cat">Synchronizace</span>
       </a>
     </li>
-    <li class="svc" data-rank="9" data-name="Karakeep" data-group="amunet">
+    <li class="svc" data-rank="9" data-name="Karakeep" data-cat="rodina" data-group="amunet">
       <a href="http://amunet.tail49d1b.ts.net:3001/">
-        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:3001/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:3001/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:3001/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:3001/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="dot" data-probe="1" data-port="3001" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:3001/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:3001/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:3001/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:3001/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
         <span class="body"><b>Karakeep</b><span class="desc">Záložky a články na později, s fulltextem.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:3001</code><span class="via" data-kind="http">HTTP</span></span></span>
         <span class="cat">Pro rodinu</span>
       </a>
     </li>
-    <li class="svc" data-rank="10" data-name="Forgejo" data-group="amunet">
+    <li class="svc" data-rank="10" data-name="Forgejo" data-cat="vyvoj" data-group="amunet">
       <a href="http://amunet.tail49d1b.ts.net:3000/">
-        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:3000/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:3000/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:3000/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:3000/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="dot" data-probe="1" data-port="3000" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:3000/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://amunet.tail49d1b.ts.net:3000/&quot;,&quot;kind&quot;:&quot;name&quot;},{&quot;url&quot;:&quot;http://100.70.180.58:3000/&quot;,&quot;kind&quot;:&quot;ip&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:3000/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
         <span class="body"><b>Forgejo</b><span class="desc">Vlastní Git server.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:3000</code><span class="via" data-kind="http">HTTP</span></span></span>
         <span class="cat">Vývoj</span>
       </a>
     </li>
-    <li class="svc" data-rank="11" data-name="Portainer" data-group="amunet">
+    <li class="svc" data-rank="11" data-name="Portainer" data-cat="sprava" data-group="amunet">
       <a href="https://amunet.tail49d1b.ts.net:9443/">
-        <span class="dot" data-probe="0" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:9443/&quot;,&quot;kind&quot;:&quot;tls&quot;}]"></span>
+        <span class="dot" data-probe="0" data-port="9443" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:9443/&quot;,&quot;kind&quot;:&quot;tls&quot;}]"></span>
         <span class="body"><b>Portainer</b><span class="desc">Správa Docker kontejnerů. Prohlížeč upozorní na certifikát — to je v pořádku.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:9443</code><span class="via" data-kind="https">HTTPS</span></span></span>
         <span class="cat">Správa</span>
       </a>
     </li>
-    <li class="svc" data-rank="12" data-name="Anubis 2" data-group="amunet">
+    <li class="svc" data-rank="12" data-name="Anubis 2" data-cat="vyvoj" data-group="amunet">
       <a href="https://amunet.tail49d1b.ts.net:8089/">
-        <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8089/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8089/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
+        <span class="dot" data-probe="1" data-port="8089" data-routes="[{&quot;url&quot;:&quot;https://amunet.tail49d1b.ts.net:8089/&quot;,&quot;kind&quot;:&quot;tls&quot;},{&quot;url&quot;:&quot;http://192.168.88.79:8089/&quot;,&quot;kind&quot;:&quot;lan&quot;}]"></span>
         <span class="body"><b>Anubis 2</b><span class="desc">Jendův agent a přehled projektů.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net:8089</code><span class="via" data-kind="https">HTTPS</span></span></span>
         <span class="cat">Vývoj</span>
       </a>
     </li>
-    <li class="svc" data-rank="13" data-name="Losování soutěží" data-group="amunet-rogan">
+    <li class="svc" data-rank="13" data-name="Losování soutěží" data-cat="nastroj" data-group="amunet-rogan">
       <a href="/sky_max/losovani-soutezi/">
         <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;/sky_max/losovani-soutezi/&quot;,&quot;kind&quot;:&quot;fixed&quot;}]"></span>
-        <span class="body"><b>Losování soutěží</b><span class="desc">sky_max/losovani-soutezi</span>
+        <span class="body"><b>Losování soutěží</b><span class="desc">Soutěže ábíčka na Instagramu a Facebooku: zadání přijme e-mailem, po skončení vylosuje výherce z komentářů, výsledek uloží do Excelu a ohlásí na Telegramu.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net/sky_max/losovani-soutezi/</code><span class="via" data-kind=""></span></span></span>
         <span class="cat">Martinovy nástroje</span>
       </a>
     </li>
-    <li class="svc" data-rank="14" data-name="Carousel generator" data-group="amunet-rogan">
+    <li class="svc" data-rank="14" data-name="Carousel generator" data-cat="nastroj" data-group="amunet-rogan">
       <a href="/sky_max/carousel-generator/">
         <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;/sky_max/carousel-generator/&quot;,&quot;kind&quot;:&quot;fixed&quot;}]"></span>
-        <span class="body"><b>Carousel generator</b><span class="desc">sky_max/carousel-generator</span>
+        <span class="body"><b>Carousel generator</b><span class="desc">Instagramové carousely 1080 × 1080 z článků ábíčka: Claude napíše texty slidů, ty přiřadíš fotky a stáhneš PNG.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net/sky_max/carousel-generator/</code><span class="via" data-kind=""></span></span></span>
         <span class="cat">Martinovy nástroje</span>
       </a>
     </li>
-    <li class="svc" data-rank="15" data-name="Some report" data-group="amunet-rogan">
+    <li class="svc" data-rank="15" data-name="SoMe report" data-cat="nastroj" data-group="amunet-rogan">
       <a href="/sky_max/some-report/">
         <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;/sky_max/some-report/&quot;,&quot;kind&quot;:&quot;fixed&quot;}]"></span>
-        <span class="body"><b>Some report</b><span class="desc">sky_max/some-report</span>
+        <span class="body"><b>SoMe report</b><span class="desc">Měsíční SoMe reporting redakcí CNC z Meta Insights — Instagram a Facebook zvlášť, s vlastní časovou řadou.</span>
           <span class="meta"><code class="addr">amunet.tail49d1b.ts.net/sky_max/some-report/</code><span class="via" data-kind=""></span></span></span>
         <span class="cat">Martinovy nástroje</span>
       </a>
     </li>
-    <li class="svc" data-rank="16" data-name="Virtuální Česko" data-group="amunet-rogan">
+    <li class="svc" data-rank="16" data-name="Virtuální Česko" data-cat="nastroj" data-group="amunet-rogan">
       <a href="/sky_max/virtualni-cesko/">
         <span class="dot" data-probe="1" data-routes="[{&quot;url&quot;:&quot;/sky_max/virtualni-cesko/&quot;,&quot;kind&quot;:&quot;fixed&quot;}]"></span>
         <span class="body"><b>Virtuální Česko</b><span class="desc">Nový nástroj — popis doplníme.</span>
@@ -309,9 +327,31 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
     btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.sort === mode)); });
     try{ localStorage.setItem(KEY, mode); }catch(e){}
   }
-  btns.forEach(function(b){ b.addEventListener('click', function(){ sortBy(b.dataset.sort); }); });
+  btns.forEach(function(b){ b.addEventListener('click', function(){ sortBy(b.dataset.sort); applyFilter(); }); });
+
+  // Filtr podle stitku. Klepnuti na aktivni stitek filtr zrusi.
+  var chips = [].slice.call(document.querySelectorAll('.chips button'));
+  var FKEY = 'amunet:services:cat';
+  var cat = '';
+  try{ cat = localStorage.getItem(FKEY) || ''; }catch(e){}
+  if(!chips.some(function(c){ return c.dataset.cat === cat; })) cat = '';
+  function applyFilter(){
+    items.forEach(function(li){ li.hidden = !!cat && li.dataset.cat !== cat; });
+    var head = null, any = false;
+    [].slice.call(list.children).forEach(function(el){
+      if(el.classList.contains('grp')){ if(head) head.hidden = !any; head = el; any = false; }
+      else if(!el.hidden) any = true;
+    });
+    if(head) head.hidden = !any;
+    chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c.dataset.cat === cat)); });
+    try{ localStorage.setItem(FKEY, cat); }catch(e){}
+  }
+  chips.forEach(function(c){ c.addEventListener('click', function(){
+    cat = (c.dataset.cat === cat) ? '' : c.dataset.cat; applyFilter();
+  }); });
   var saved = null; try{ saved = localStorage.getItem(KEY); }catch(e){}
   sortBy(saved === 'name' ? 'name' : 'group');
+  applyFilter();
 
   // Dostupnost a cesta. Kazda sluzba nese kandidatni cesty v poradi
   // https(jmeno) -> http(jmeno) -> http(tailnet IP) -> http(LAN). Vsechny se
@@ -348,8 +388,52 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
     }
   }
 
+  // Stav (tecka) urcuje Amunet sam: /_probe/<port>/ je stejny origin jako
+  // stranka, takze funguje i z HTTPS (prime http:// sondy by prohlizec
+  // zablokoval jako mixed content) a i pro Vaultwarden/Portainer.
+  // Prime sondy nize uz hlavne vybiraji nejlepsi odkaz.
+  function head(url, redirect){
+    return new Promise(function(res){
+      var ctl = ('AbortController' in window) ? new AbortController() : null;
+      var t = setTimeout(function(){ ctl && ctl.abort(); res(null); }, 6000);
+      fetch(url, {method:'HEAD', cache:'no-store', redirect: redirect, signal: ctl && ctl.signal})
+        .then(function(r){ clearTimeout(t); res(r); }, function(){ clearTimeout(t); res(null); });
+    });
+  }
+  function serverState(dot){
+    if(dot.dataset.port){
+      return head('/_probe/' + dot.dataset.port + '/', 'follow').then(function(r){
+        if(!r || r.headers.get('X-Amunet-Probe') !== '1') return null;  // sonda neni nasazena
+        return [502, 503, 504].indexOf(r.status) < 0;
+      });
+    }
+    var all = JSON.parse(dot.dataset.routes);
+    if(all.length === 1 && all[0].url.charAt(0) === '/'){
+      // nastroj pod stejnym originem: 502 = kontejner nebezi. Jinak bezi — i 404
+      // (nektere nastroje na HEAD odpovidaji 404, odpovida ale aplikace sama).
+      return head(all[0].url, 'manual').then(function(r){
+        if(!r) return null;
+        if(r.type === 'opaqueredirect') return true;
+        return [502, 503, 504].indexOf(r.status) < 0;
+      });
+    }
+    return Promise.resolve(null);
+  }
+
   var jobs = items.map(function(li){
     var dot = li.querySelector('.dot');
+    var direct = directJob(li, dot);
+    return Promise.all([direct, serverState(dot)]).then(function(x){
+      var up = x[1];
+      if(up === null) return;
+      if(li.dataset.blind){ stats.blind--; delete li.dataset.blind; }
+      dot.dataset.state = up ? 'up' : 'down';
+      var a = li.querySelector('a');
+      dot.title = (up ? 'odpovídá' : 'neodpovídá') + ' (ověřeno přes Amunet) · ' + a.href;
+    });
+  });
+
+  function directJob(li, dot){
     if(dot.dataset.probe === '0') return Promise.resolve();
     var all = JSON.parse(dot.dataset.routes);
     var routes = all.filter(function(r){
@@ -361,7 +445,7 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
       // na DNS ani na HSTS, ktere umi prepsat http://jmeno na https.
       var ip = all.filter(function(r){ return r.kind === 'ip'; })[0];
       if(ip){ apply(li, ip); stats.http.push(li.dataset.name); }
-      stats.blind++;
+      stats.blind++; li.dataset.blind = '1';
       return Promise.resolve();
     }
     dot.dataset.state = 'checking';
@@ -373,7 +457,7 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
         // content zkusit nesmeli -> nevime. Odkaz na tailnet IP, stav neutralni.
         var ip = hidden && all.filter(function(r){ return r.kind === 'ip'; })[0];
         if(ip){ apply(li, ip); delete dot.dataset.state; dot.title = 'neověřeno (HTTPS stránka)';
-                stats.http.push(li.dataset.name); stats.blind++; return; }
+                stats.http.push(li.dataset.name); stats.blind++; li.dataset.blind = '1'; return; }
         dot.dataset.state = 'down'; dot.title = 'neodpovídá'; return;
       }
       return ps[i].then(function(ok){
@@ -386,7 +470,7 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
       });
     }
     return step();
-  });
+  }
 
   // Proc selhalo http://jmeno, kdyz IP funguje? Bud se jmeno neprelozi (DNS),
   // nebo se prelozi, ale prohlizec http na nem prepisuje na https (HSTS).
@@ -412,7 +496,7 @@ ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
     if(cause === 'dns') show('sec-dns', 'n-dns',
       'Jméno ' + HOST + ' se v tomhle zařízení nepřekládá, odkazy proto vedou přes IP. ' +
       'Zapni Tailscale DNS: Tailscale set --accept-dns=true.');
-    if(stats.blind) show('sec-https', 'n-https',
+    if(stats.blind > 0) show('sec-https', 'n-https',
       'Služby na holém HTTP nejde z HTTPS stránky ověřit; odkazy na ně vedou přes IP. ' +
       'Pro plnou kontrolu otevři http://' + HOST + '/sluzby/');
     if(stats.http.length){

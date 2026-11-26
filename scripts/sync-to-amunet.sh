@@ -15,6 +15,16 @@ NGINX_CONF_PATH="/etc/nginx/conf.d/http.amunet-rogan.conf"
 
 export COPYFILE_DISABLE=1
 
+# --site-only: jen web (amunet/site/) — bez tools/, runneru a nginx, takze bez sudo.
+SITE_ONLY=0
+for arg in "$@"; do
+  case "$arg" in
+    --site-only) SITE_ONLY=1 ;;
+    -h|--help) echo "Usage: $0 [--site-only]"; exit 0 ;;
+    *) echo "Unknown argument: $arg" >&2; exit 2 ;;
+  esac
+done
+
 echo "→ Target: $AMUNET_HOST"
 echo "→ Remote base: $REMOTE_BASE"
 echo ""
@@ -27,6 +37,7 @@ ssh "$AMUNET_HOST" "mkdir -p $REMOTE_BASE/tools $REMOTE_BASE/runner/data $REMOTE
 # Sync tools/  — atomic full replace (tools/ contains only tracked config.env
 # files; tool runtime state lives in tools/<user>/<tool>/.env which is NOT here)
 # -----------------------------------------------------------------------------
+if (( ! SITE_ONLY )); then
 echo "→ Syncing tools/ (atomic full replace)"
 
 # The remote script preserves .env and docker-compose.yml from any existing
@@ -35,7 +46,7 @@ echo "→ Syncing tools/ (atomic full replace)"
 # we WARN and continue — the runner will regenerate it on the next deploy.
 (
   cd "$REPO_ROOT/amunet/tools"
-  tar --exclude=.gitkeep -cf - .
+  tar --no-xattrs --exclude=.gitkeep -cf - .
 ) | ssh "$AMUNET_HOST" '
   set -eu
   REMOTE_BASE="'"$REMOTE_BASE"'"
@@ -71,6 +82,7 @@ echo "→ Syncing tools/ (atomic full replace)"
 
   echo "  ✓ tools/ swap complete"
 '
+fi  # SITE_ONLY
 
 # -----------------------------------------------------------------------------
 # Sync site/ — web servisovany na http://amunet.tail49d1b.ts.net/
@@ -81,7 +93,7 @@ echo "→ Syncing site/"
 if [[ -f "$REPO_ROOT/amunet/site/index.html" ]]; then
   (
     cd "$REPO_ROOT/amunet/site"
-    tar -cf - .
+    tar --no-xattrs -cf - .
   ) | ssh "$AMUNET_HOST" '
     set -eu
     B="'"$REMOTE_BASE"'"
@@ -97,6 +109,12 @@ if [[ -f "$REPO_ROOT/amunet/site/index.html" ]]; then
   ' 2>&1 | grep -v "post-quantum\|See https://openssh" || true
 else
   echo "  ⚠ amunet/site/index.html missing — run: cd site-src && bun run build" >&2
+fi
+
+if (( SITE_ONLY )); then
+  echo ""
+  echo "✓ Sync complete (site only)."
+  exit 0
 fi
 
 echo "→ Syncing runner/ (compose + .env.example only, preserves .env)"

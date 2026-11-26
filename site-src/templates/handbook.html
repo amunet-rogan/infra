@@ -93,6 +93,18 @@ kbd{font:600 .8em var(--mono);background:var(--card);border:1px solid var(--line
 .task li.done{opacity:.5}
 .task li.done .tt{text-decoration:line-through}
 .tt{flex:1}
+/* --- archivni (hotove) sekce: sbalene na konci --- */
+nav a.arch{opacity:.55}
+section.arch details>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;
+  align-items:baseline;gap:.2rem .8rem;padding:.9rem 1rem;background:var(--card);
+  border:1px solid var(--line);border-radius:11px;-webkit-tap-highlight-color:transparent}
+section.arch details>summary::-webkit-details-marker{display:none}
+section.arch details>summary::before{content:"▸";color:var(--accent);font-size:.9rem}
+section.arch details[open]>summary::before{content:"▾"}
+section.arch details>summary h1{margin:0;font-size:1.15rem;color:var(--dim)}
+section.arch details[open]>summary h1{color:var(--fg)}
+.arch-note{flex-basis:100%;font-size:.85rem;color:var(--dim);padding-left:1.25rem}
+section.arch details[open]>summary{margin-bottom:1rem}
 footer{max-width:820px;margin:0 auto;padding:0 1.1rem 3rem;color:var(--dim);
   font:.76rem/1.6 var(--mono)}
 @media (max-width:600px){
@@ -174,6 +186,15 @@ footer{max-width:820px;margin:0 auto;padding:0 1.1rem 3rem;color:var(--dim);
     });
     pre.appendChild(b);
   });
+
+  // Odkaz na sbalenou (archivni) sekci ji rozbali
+  function openTarget(){
+    var el = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    var d = el && el.querySelector('details');
+    if(d && !d.open){ d.open = true; el.scrollIntoView(); }
+  }
+  window.addEventListener('hashchange', openTarget);
+  openTarget();
 
   // Zvyrazneni aktivni sekce v navigaci
   var links = [].slice.call(document.querySelectorAll('nav a'));

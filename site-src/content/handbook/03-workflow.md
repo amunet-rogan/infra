@@ -11,7 +11,7 @@ Jak vyrobíš a nasadíš nástroj. Po prvním průchodu to zabere pár minut.
 | ✅ | `instagram-stats`, `post-scheduler`, `losovani-soutezi` |
 | ❌ | `IG Stats`, `můj_nástroj!`, `Instagram Stats` |
 
-**2. Napiš Jendovi název.** Musí nástroj zaregistrovat — přidělí mu port a vygeneruje nginx konfiguraci. Trvá to půl minuty, ale bez toho tvoje URL nebude existovat.
+**2. Napiš Jendovi název a jednou větou, co nástroj dělá.** Jenda nástroj zaregistruje jedním příkazem — přidělí mu port, nastaví adresu a přidá ho na [seznam služeb](../sluzby/) s tvým popisem. Bez toho tvoje URL nebude existovat a první nasazení skončí chybou *not onboarded*.
 
 **3. Až potvrdí,** jdi na [tool-template](https://github.com/amunet-rogan/tool-template) → **Use this template** → **Create a new repository**:
 

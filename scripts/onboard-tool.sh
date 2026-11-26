@@ -79,11 +79,13 @@ if (( ! SITE_OK )); then
     echo "    cd \"$REPO_ROOT/site-src\" && bun install && bun run add-service.ts $USER_NAME $TOOL_NAME && bun run build" >&2
 fi
 
+if [[ -n "${ONBOARD_QUIET:-}" ]]; then exit 0; fi   # called from tool.sh, which does the rest
+
 echo ""
-echo "Next steps:"
-echo "  1. Give it a real name + description:  site-src/data/services.json  (search \"/$USER_NAME/$TOOL_NAME/\")"
-echo "     then:  (cd \"$REPO_ROOT/site-src\" && bun run build)"
-echo "  2. git -C \"$REPO_ROOT\" add amunet/ site-src/data/services.json && git -C \"$REPO_ROOT\" commit -m 'Onboard $USER_NAME/$TOOL_NAME'"
+echo "Next steps (or use ./scripts/tool.sh new $USER_NAME/$TOOL_NAME, which does all of this):"
+echo "  1. Name + description:  (cd \"$REPO_ROOT/site-src\" && bun run add-service.ts $USER_NAME $TOOL_NAME --name \"…\" --desc \"…\" && bun run build)"
+echo "  2. git -C \"$REPO_ROOT\" add amunet/tools/$USER_NAME/$TOOL_NAME/config.env amunet/nginx/http.amunet-rogan.conf site-src/data/services.json amunet/site"
+echo "     git -C \"$REPO_ROOT\" commit -m 'Onboard $USER_NAME/$TOOL_NAME (port $NEXT_PORT)' && git -C \"$REPO_ROOT\" push origin main"
 echo "  3. \"$REPO_ROOT/scripts/sync-to-amunet.sh\""
 echo ""
 echo "Tool URL (once deployed): http://amunet.tail49d1b.ts.net/$USER_NAME/$TOOL_NAME/"

@@ -70,6 +70,7 @@ type Svc = {
   rank: number; name: string; cat: string; desc: string;
   url?: string; port?: number; path?: string;
   tls?: boolean; only?: "https"; probe?: boolean; group?: string;
+  upstream?: "http" | "https";  // backend pro /_probe/<port>/ (regenerate-nginx-conf.sh)
 };
 type Route = { url: string; kind: "tls" | "name" | "ip" | "lan" | "fixed" };
 const sdata: { host: string; tsip: string; lan: string; categories: Record<string, string>;
@@ -135,9 +136,9 @@ const cards = [...sdata.services].sort((a, b) => a.rank - b.rank).map(s => {
   const rs = routes(s);
   const def = s.tls ? rs[0] : (rs.find(r => r.kind === "name") ?? rs[0]);
   const scheme = def.url.startsWith("https:") ? "https" : def.kind === "fixed" && def.url.startsWith("/") ? "" : "http";
-  return `    <li class="svc" data-rank="${s.rank}" data-name="${esc(s.name)}" data-group="${esc(s.group ?? Object.keys(sdata.groups)[0])}">
+  return `    <li class="svc" data-rank="${s.rank}" data-name="${esc(s.name)}" data-cat="${esc(s.cat)}" data-group="${esc(s.group ?? Object.keys(sdata.groups)[0])}">
       <a href="${esc(def.url)}">
-        <span class="dot" data-probe="${s.probe === false ? "0" : "1"}" data-routes="${esc(JSON.stringify(rs))}"></span>
+        <span class="dot" data-probe="${s.probe === false ? "0" : "1"}"${s.port ? ` data-port="${s.port}"` : ""} data-routes="${esc(JSON.stringify(rs))}"></span>
         <span class="body"><b>${esc(s.name)}</b><span class="desc">${esc(s.desc)}</span>
           <span class="meta"><code class="addr">${esc(addr(def.url))}</code><span class="via" data-kind="${scheme}">${scheme.toUpperCase()}</span></span></span>
         <span class="cat">${esc(sdata.categories[s.cat])}</span>
@@ -145,8 +146,13 @@ const cards = [...sdata.services].sort((a, b) => a.rank - b.rank).map(s => {
     </li>`;
 }).join("\n");
 
+// Filtr podle stitku (kategorie) — jen kategorie, ktere nejaka sluzba pouziva, v poradi z JSON.
+const usedCats = Object.keys(sdata.categories).filter(c => sdata.services.some(s => s.cat === c));
+const chips = [`<button type="button" data-cat="" aria-pressed="true">Vše</button>`,
+  ...usedCats.map(c => `<button type="button" data-cat="${esc(c)}" aria-pressed="false">${esc(sdata.categories[c])}</button>`)].join("\n    ");
+
 await emit("sluzby/index.html", fill(await read("templates/services.html"), {
-  BASE_CSS, SERVICES: cards, HOST: sdata.host, GROUPS_JSON: scriptJson(sdata.groups),
+  BASE_CSS, SERVICES: cards, CHIPS: chips, HOST: sdata.host, GROUPS_JSON: scriptJson(sdata.groups),
 }));
 
 // --- handbook ------------------------------------------------------------
@@ -154,14 +160,17 @@ const HB = join(HERE, "content", "handbook");
 const files = (await readdir(HB)).filter(f => f.endsWith(".md")).sort();
 if (!files.length) throw new Error(`Zadny markdown v ${HB}`);
 
-const nav: string[] = [];
-const sections: string[] = [];
+// Sekce s "<!-- archiv: poznamka -->" je hotova (napr. Novy Mac): jde na konec,
+// sbalena v <details>, v navigaci ztlumena. Obsah zustava pro pristi pouziti.
+const nav: string[] = [], navArch: string[] = [];
+const sections: string[] = [], sectArch: string[] = [];
 for (const file of files) {
   const raw = await readFile(join(HB, file), "utf8");
   const m = raw.match(/^#\s+(.+)$/m);
   if (!m) throw new Error(`${file}: chybi nadpis "# ..."`);
   const title = m[1].trim(), id = slug(title);
-  nav.push(`<a href="#${id}">${esc(title)}</a>`);
+  const arch = raw.match(/^<!--\s*archiv:\s*([\s\S]*?)\s*-->\s*$/m);
+  (arch ? navArch : nav).push(`<a href="#${id}"${arch ? ' class="arch"' : ""}>${esc(title)}</a>`);
 
   // Partialy AZ PO marked.parse — marked ukonci raw HTML blok na prvnim
   // prazdnem radku a zbytek zparsuje jako markdown. To rozbilo prvni diagram.
@@ -170,11 +179,20 @@ for (const file of files) {
     body = body.replace(pm[0], await read(`partials/${pm[1]}.html`));
   }
   if (body.includes("{{PARTIAL:")) throw new Error(`${file}: PARTIAL marker musi byt na vlastnim radku`);
-  sections.push(`<section id="${id}">\n${body}</section>`);
+  if (arch) {
+    body = body.replace(/^<!--[\s\S]*?-->\s*/m, "");
+    const h1 = body.match(/<h1[^>]*>[\s\S]*?<\/h1>\s*/);
+    if (!h1) throw new Error(`${file}: archivni sekce bez <h1>`);
+    body = body.replace(h1[0], "");
+    sectArch.push(`<section id="${id}" class="arch">\n<details>\n<summary>${h1[0].trim()}` +
+      `<span class="arch-note">${esc(arch[1])}</span></summary>\n${body}</details>\n</section>`);
+  } else {
+    sections.push(`<section id="${id}">\n${body}</section>`);
+  }
 }
 
 await emit("pro-martina/index.html", fill(await read("templates/handbook.html"), {
-  BASE_CSS, NAV: nav.join("\n"), CONTENT: sections.join("\n"), BUILT: built,
+  BASE_CSS, NAV: [...nav, ...navArch].join("\n"), CONTENT: [...sections, ...sectArch].join("\n"), BUILT: built,
 }));
 
 console.log(`sestaveno ${built} → ${OUT}`);

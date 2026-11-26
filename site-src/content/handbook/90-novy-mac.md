@@ -1,5 +1,7 @@
 # Nový Mac
 
+<!-- archiv: Hotovo — Mac je nastavený. Nechávám to tu pro další Mac nebo přeinstalaci. -->
+
 Odškrtávací seznam. Jdi shora dolů, každý krok má ověření. Odškrtnutí se pamatuje v prohlížeči, takže můžeš zavřít a vrátit se.
 
 Terminál otevřeš přes <kbd>Cmd</kbd>+<kbd>mezerník</kbd> → napiš `Terminal` → <kbd>Enter</kbd>.
